@@ -1,0 +1,23 @@
+07-23 23:00:10 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 647:Plugin executed on: 'darwin'
+07-23 23:00:10 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 648:Plugin executed with python version: '3.9.13 (v3.9.13:6de2ca5339, May 17 2022, 11:37:23) \n[Clang 13.0.0 (clang-1300.0.29.30)]'
+07-23 23:00:10 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 649:KiCad build version: 8.0.0
+07-23 23:00:10 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 650:Plugin version: 3.0.0
+07-23 23:00:10 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 651:Frame repr: <wx._core.Frame object at 0x1166b74c0>
+07-23 23:00:10 com_github_MitjaNemec_PlaceFootprints.place_footprints 121:getting a list of all footprints on board
+07-23 23:00:10 com_github_MitjaNemec_PlaceFootprints.place_footprints 156:Footprint D2 on root level
+07-23 23:00:10 com_github_MitjaNemec_PlaceFootprints.place_footprints 156:Footprint D1 on root level
+07-23 23:00:11 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 830:Reference designator is: D
+07-23 23:00:11 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 831:Reference number is: 1
+07-23 23:00:11 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 863:Sorted and filtered list:
+['D1', 'D2']
+07-23 23:00:11 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 359:wx.Colour(231, 231, 231, 255)
+07-23 23:00:16 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 490:'8.852'
+07-23 23:00:16 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 542:Preparing config for reference circular
+07-23 23:00:16 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 556:Saving config file
+07-23 23:00:16 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 558:Saved the config file
+07-23 23:00:17 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 901:Footprints to place:
+['D1', 'D2']
+07-23 23:00:17 com_github_MitjaNemec_PlaceFootprints.place_footprints 330:Starting placing with circular layout
+07-23 23:00:17 com_github_MitjaNemec_PlaceFootprints.place_footprints 340:reference footprint position at: VECTOR2I(150000000, 95000000)
+07-23 23:00:17 com_github_MitjaNemec_PlaceFootprints.place_footprints 345:rotation center at: (150000000, 103852000.0)
+07-23 23:00:17 com_github_MitjaNemec_PlaceFootprints.action_place_footprints 916:Placing complete

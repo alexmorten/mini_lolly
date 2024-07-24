@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "lolly-pcb"
+version = "0.1.0"
+description = ""
+authors = ["alexmorten <alexandrius.martinus@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+kigadgets = "^0.4.2"
+kicad-skip = "^0.2.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
