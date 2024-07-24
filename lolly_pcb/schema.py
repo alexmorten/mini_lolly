@@ -14,7 +14,7 @@ vcc = s.symbol.PWR02
 # gen leds
 leds = []
 h = {}
-led_count = 64
+led_count = 21*3
 
 
 def connect(led1, led2):
@@ -23,33 +23,44 @@ def connect(led1, led2):
     w.end_at(led2.pin.DIN)
 
 
-for i in range(led_count):
-    id = i + 1
+led_indexes = []
+
+for stripidx, j in enumerate([1, 9, 17, 4, 12, 20, 7, 15, 2, 10, 18, 5, 13, 21, 8, 16, 3, 11, 19, 6, 14]):
+    strip = []
+    for i in range(j, led_count + 1, 21):
+        strip.append(i)
+    if stripidx % 2 == 1:
+        strip.reverse()
+    led_indexes.append(strip)
+
+
+for idx, strip in enumerate(led_indexes):
     column = []
-    print(id)
-    led = template.clone()
-    led.setAllReferences(f'D{id}')
-    led.lid = id
-    led.move(id*20, 0)
-    h[id] = led
-    leds.append(led)
+    for j in strip:
+        led = template.clone()
+        id = j
+        led.setAllReferences(f'D{id}')
+        led.lid = id
+        led.move(idx*20, j*20)
+        column.append(led)
+        h[id] = led
+    leds.append(column)
 
-# and connect them with some wires
-print(leds)
-for i in range(led_count-1):
-    print(i)
-    led1 = leds[i]
-    led2 = leds[i+1]
+for idx in range(2, led_count):
+    connect(h[idx-1], h[idx])
+#         # and connect them with some wires
+# for col in leds:
+#     for led1, led2 in zip(col, col[1:]):
+#         connect(led1, led2)
 
-    connect(led1, led2)
-
-for led in leds:
-    w = s.wire.new()
-    w.start_at(led.pin.VDD)
-    w.end_at(vcc)
-    w = s.wire.new()
-    w.start_at(led.pin.VSS)
-    w.end_at(gnd)
+for col in leds:
+    for led in col:
+        w = s.wire.new()
+        w.start_at(led.pin.VDD)
+        w.end_at(vcc)
+        w = s.wire.new()
+        w.start_at(led.pin.VSS)
+        w.end_at(gnd)
 
 
 template.delete()

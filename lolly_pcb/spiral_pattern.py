@@ -4,7 +4,7 @@ import math
 
 offset = 10
 SCALE = 1e6
-LED_SPACING = 9
+LED_SPACING = 5.5
 VIA_SPACING = 2.0
 
 
@@ -29,6 +29,10 @@ def draw_track(board, start, end, layer, net, width=None):
     if width:
         track.SetWidth(int(width))
     return track
+
+
+def vector(length, angle, scale=SCALE):
+    return pcbnew.VECTOR2I(int(length * math.sin(angle) * scale), int(length * math.cos(angle) * scale))
 
 
 def pads_for_idx(board, led, pads, idx):
@@ -61,41 +65,71 @@ class SpiralLEDPlacement(pcbnew.ActionPlugin):
         center_y = 100 * SCALE     # Center y coordinate in nm (100 mm)
         selected_footprints = [
             module for module in board.Footprints() if module.IsSelected()]
+        LED_MAP = []
+        LED_ROTATE = []
+        LEDS = len(selected_footprints)
+        for stripidx, j in enumerate([1, 9, 17, 4, 12, 20, 7, 15, 2, 10, 18, 5, 13, 21, 8, 16, 3, 11, 19, 6, 14]):
+            strip = []
+            for i in range(j, LEDS + 1, 21):
+                strip.append(i)
+                LED_ROTATE.append(180 if stripidx % 2 == 0 else 0)
+            if stripidx % 2 == 1:
+                strip.reverse()
+            LED_MAP += strip
 
-        for i, led in enumerate(selected_footprints):
-            led_idx = i + 1
-            # angle = 0.1 * i  # Increase the angle to spread out the spiral
-            # radius = start_radius + spacing * i  # Increase radius gradually
-            # # Convert mm to nm for pcbnew
-            # x = center_x + int(radius * math.cos(angle) * 1e6)
-            # y = center_y + int(radius * math.sin(angle) * 1e6)
 
-            r = LED_SPACING * math.sqrt(i)
-            deg = i * 137.508
+#
+
+        for led_idx in range(1, LEDS + 1):
+            n = LED_MAP[led_idx - 1]
+            r = LED_SPACING * math.sqrt(n)
+            deg = n * 137.508
             angle = (deg / 180) * math.pi
             pos = pcbnew.VECTOR2I(
                 int(r * math.cos(angle) * SCALE + center_x), int(r * math.sin(angle) * SCALE + center_y))
             led = board.FindFootprintByReference("D{}".format(led_idx))
             led.SetPosition(pos)
 
+            rotate = LED_ROTATE[led_idx - 1] - deg - 10
+
+            # manually correct some leds on the boarder
+            # if led_idx in reverse:
+            #     rotate += 180
+            rotate_rad = (rotate / 180.) * math.pi
+            offset = vector(2, rotate_rad - math.pi / 2)
+            led.SetOrientationDegrees(rotate)
             pads = led.Pads()
             gnd_pad = [pad for pad in pads if pad.GetNet().GetNetname()
                        == "GND"][0]
-            offset = pcbnew.VECTOR2I(int(VIA_SPACING * SCALE), int(0))
-            # Attempt to load the LED footprint from the library
-            # led.SetPosition(pcbnew.VECTOR2I(int(x), int(y)))
             via = draw_via(board, gnd_pad.GetCenter() + offset,
                            pcbnew.F_Cu, gnd_pad.GetNet())
             draw_track(board, gnd_pad.GetCenter(), via.GetCenter(),
                        pcbnew.F_Cu, gnd_pad.GetNet(), 0.8 * SCALE)
 
-            if (i == 0):
+            if (led_idx == 1):
                 continue
 
             prev_dout_pad, din_pad = pads_for_idx(board, led, pads, led_idx)
 
             draw_track(board, prev_dout_pad.GetCenter(), din_pad.GetCenter(),
                        pcbnew.F_Cu, prev_dout_pad.GetNet(), 0.25 * SCALE)
+
+#
+
+        # for i, led in enumerate(selected_footprints):
+        #     led_idx = i + 1
+
+        #     r = LED_SPACING * math.sqrt(i)
+        #     deg = i * 137.508
+        #     angle = (deg / 180) * math.pi
+        #     pos = pcbnew.VECTOR2I(
+        #         int(r * math.cos(angle) * SCALE + center_x), int(r * math.sin(angle) * SCALE + center_y))
+        #     led = board.FindFootprintByReference("D{}".format(led_idx))
+        #     led.SetPosition(pos)
+
+        #     pads = led.Pads()
+
+        #     offset = pcbnew.VECTOR2I(int(VIA_SPACING * SCALE), int(0))
 
         pcbnew.Refresh()
 
