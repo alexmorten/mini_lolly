@@ -4,7 +4,7 @@ import math
 
 offset = 10
 SCALE = 1e6
-LED_SPACING = 8
+LED_SPACING = 9
 VIA_SPACING = 2.0
 
 
@@ -19,6 +19,34 @@ def draw_via(board, pos, layer, net, diameter=0.8 * SCALE, drill=0.4 * SCALE):
     return via
 
 
+def draw_track(board, start, end, layer, net, width=None):
+    track = pcbnew.PCB_TRACK(board)
+    track.SetStart(start)
+    track.SetEnd(end)
+    track.SetLayer(layer)
+    board.Add(track)
+    track.SetNet(net)
+    if width:
+        track.SetWidth(int(width))
+    return track
+
+
+def pads_for_idx(board, led, pads, idx):
+    prev_idx = idx - 1
+    prev_led = board.FindFootprintByReference("D{}".format(prev_idx))
+    prev_pads = prev_led.Pads()
+    # raise BaseException(prev_net_name)
+    # padnames = [pad.GetPadName() for pad in prev_pads]
+    # raise BaseException(padnames)
+    prev_dout_pad = [pad for pad in prev_pads if pad.GetPadName(
+    ) == "2"][0]
+
+    din_pad = [pad for pad in pads if pad.GetPadName(
+    ) == "4"][0]
+
+    return prev_dout_pad, din_pad
+
+
 class SpiralLEDPlacement(pcbnew.ActionPlugin):
     def defaults(self):
         self.name = "Spiral LED Placement"
@@ -27,8 +55,8 @@ class SpiralLEDPlacement(pcbnew.ActionPlugin):
 
     def Run(self):
         board = pcbnew.GetBoard()
-        start_radius = 5    # Starting radius in mm
-        spacing = 5          # Spacing between each turn in mm
+        # start_radius = 5    # Starting radius in mm
+        # spacing = 5          # Spacing between each turn in mm
         center_x = 150 * SCALE     # Center x coordinate in nm (150 mm)
         center_y = 100 * SCALE     # Center y coordinate in nm (100 mm)
         selected_footprints = [
@@ -56,8 +84,18 @@ class SpiralLEDPlacement(pcbnew.ActionPlugin):
             offset = pcbnew.VECTOR2I(int(VIA_SPACING * SCALE), int(0))
             # Attempt to load the LED footprint from the library
             # led.SetPosition(pcbnew.VECTOR2I(int(x), int(y)))
-            draw_via(board, gnd_pad.GetCenter() + offset,
-                     pcbnew.F_Cu, gnd_pad.GetNet())
+            via = draw_via(board, gnd_pad.GetCenter() + offset,
+                           pcbnew.F_Cu, gnd_pad.GetNet())
+            draw_track(board, gnd_pad.GetCenter(), via.GetCenter(),
+                       pcbnew.F_Cu, gnd_pad.GetNet(), 0.8 * SCALE)
+
+            if (i == 0):
+                continue
+
+            prev_dout_pad, din_pad = pads_for_idx(board, led, pads, led_idx)
+
+            draw_track(board, prev_dout_pad.GetCenter(), din_pad.GetCenter(),
+                       pcbnew.F_Cu, prev_dout_pad.GetNet(), 0.25 * SCALE)
 
         pcbnew.Refresh()
 

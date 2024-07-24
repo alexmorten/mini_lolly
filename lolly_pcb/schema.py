@@ -36,12 +36,10 @@ for i in range(led_count):
 
 # and connect them with some wires
 print(leds)
-for i in range(led_count-2):
+for i in range(led_count-1):
     print(i)
-    id1 = i + 1
-    id2 = i + 2
-    led1 = leds[id1]
-    led2 = leds[id2]
+    led1 = leds[i]
+    led2 = leds[i+1]
 
     connect(led1, led2)
 

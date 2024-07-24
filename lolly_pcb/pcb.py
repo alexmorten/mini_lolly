@@ -17,7 +17,7 @@ def place_leds_in_spiral(board, led_count, start_radius, spacing,
         y = center_y + int(radius * math.sin(angle) * 1e6)
 
         # Create a new LED module
-        component_lib_path = "/Users/alex/private/mini_lolly/lolly_pcb/mini_lolly_pcb/WS2812B.pretty"
+        component_lib_path = ""
         led = pcbnew.FootprintLoad(
             component_lib_path, "WS2812B")
         if not led:
