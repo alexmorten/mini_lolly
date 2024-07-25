@@ -41,12 +41,12 @@ for idx, strip in enumerate(led_indexes):
         id = j
         led.setAllReferences(f'D{id}')
         led.lid = id
-        led.move(idx*20, j*20)
+        led.move(idx*5, j*5)
         column.append(led)
         h[id] = led
     leds.append(column)
 
-for idx in range(2, led_count):
+for idx in range(2, led_count+1):
     connect(h[idx-1], h[idx])
 #         # and connect them with some wires
 # for col in leds:

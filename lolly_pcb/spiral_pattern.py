@@ -7,6 +7,8 @@ SCALE = 1e6
 LED_SPACING = 5.5
 VIA_SPACING = 2.0
 
+extra_rotate = [16, 33, 40, 57]
+
 
 def draw_via(board, pos, layer, net, diameter=0.8 * SCALE, drill=0.4 * SCALE):
     via = pcbnew.PCB_VIA(board)
@@ -91,12 +93,13 @@ class SpiralLEDPlacement(pcbnew.ActionPlugin):
             led.SetPosition(pos)
 
             rotate = LED_ROTATE[led_idx - 1] - deg - 10
-
+            if led_idx in extra_rotate:
+                rotate += 90
             # manually correct some leds on the boarder
             # if led_idx in reverse:
             #     rotate += 180
             rotate_rad = (rotate / 180.) * math.pi
-            offset = vector(2, rotate_rad - math.pi / 2)
+            offset = vector(2, rotate_rad)
             led.SetOrientationDegrees(rotate)
             pads = led.Pads()
             gnd_pad = [pad for pad in pads if pad.GetNet().GetNetname()
