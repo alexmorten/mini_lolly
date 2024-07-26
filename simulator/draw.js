@@ -2,7 +2,7 @@ import { radians, goldenAngle } from "./math.js";
 
 let ledCoords = [];
 
-export function drawLolly(config) {
+export function drawLolly(config, ledColors) {
   if (ledCoords.length === 0) {
     calculateLedCoordinates(config);
   }
@@ -11,13 +11,14 @@ export function drawLolly(config) {
 
   const r = config.radiusMm * config.pixelPerMm;
   // console.log("r", r);
+  ctx.fillStyle = "black";
   ctx.beginPath();
   // x, y, radius, startAngle, endAngle
   ctx.arc(r, r, r, 0, 2 * Math.PI);
-  ctx.clip();
   ctx.fill();
+  ctx.clip();
 
-  drawLEDs(config, ctx);
+  drawLEDs(config, ledColors, ctx);
 }
 
 function calculateLedCoordinates(config) {
@@ -31,7 +32,7 @@ function calculateLedCoordinates(config) {
   }
 }
 
-function drawLEDs(config, ctx) {
+function drawLEDs(config, ledColors, ctx) {
   ctx.font = "20px Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -39,7 +40,7 @@ function drawLEDs(config, ctx) {
   const blurRadius = config.blurRadius * config.pixelPerMm;
 
   for (let i = 0; i < ledCoords.length; i++) {
-    ctx.fillStyle = "green";
+    ctx.fillStyle = ledColors[i];
     var x = ledCoords[i].x + config.radiusMm * config.pixelPerMm;
     var y = ledCoords[i].y + config.radiusMm * config.pixelPerMm;
 

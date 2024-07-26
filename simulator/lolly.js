@@ -1,4 +1,5 @@
 import { drawLolly } from "./draw.js";
+import { updateLedColors } from "./pattern.js";
 
 const config = {
   ledCount: 63,
@@ -8,6 +9,15 @@ const config = {
   blurRadius: 1,
   pixelPerMm: 8.2,
   printIndex: false,
+  pattern: {
+    numArms: 21,
+  },
 };
 
-drawLolly(config);
+function draw() {
+  const ledColors = updateLedColors(config);
+  drawLolly(config, ledColors);
+  requestAnimationFrame(draw);
+}
+
+requestAnimationFrame(draw);
