@@ -7,6 +7,7 @@ const config = {
   ledSizeMm: 4,
   blurRadius: 1,
   pixelPerMm: 8.2,
+  printIndex: false,
 };
 
 drawLolly(config);

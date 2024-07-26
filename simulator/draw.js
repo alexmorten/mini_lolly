@@ -9,11 +9,12 @@ export function drawLolly(config) {
   var canvas = document.getElementById("lollycanvas");
   var ctx = canvas.getContext("2d");
 
-  ctx.beginPath();
   const r = config.radiusMm * config.pixelPerMm;
   // console.log("r", r);
+  ctx.beginPath();
   // x, y, radius, startAngle, endAngle
   ctx.arc(r, r, r, 0, 2 * Math.PI);
+  ctx.clip();
   ctx.fill();
 
   drawLEDs(config, ctx);
@@ -38,22 +39,25 @@ function drawLEDs(config, ctx) {
   const blurRadius = config.blurRadius * config.pixelPerMm;
 
   for (let i = 0; i < ledCoords.length; i++) {
-    ctx.fillStyle = "red";
+    ctx.fillStyle = "green";
     var x = ledCoords[i].x + config.radiusMm * config.pixelPerMm;
     var y = ledCoords[i].y + config.radiusMm * config.pixelPerMm;
 
     // more blurred background
-    ctx.filter = "blur(" + blurRadius * 2 + "px)";
+    ctx.filter = "brightness(200%) blur(" + blurRadius * 2 + "px)";
     ctx.beginPath();
     ctx.arc(x, y, (config.ledSizeMm * config.pixelPerMm) / 1, 0, 2 * Math.PI);
     ctx.fill();
 
     // less blurred foreground
-    ctx.filter = "blur(" + blurRadius + "px)";
+    ctx.filter = "brightness(500%) blur(" + blurRadius + "px)";
     ctx.beginPath();
     ctx.arc(x, y, (config.ledSizeMm / 2) * config.pixelPerMm, 0, 2 * Math.PI);
     ctx.fill();
 
+    if (!config.printIndex) {
+      continue;
+    }
     // LED number
     ctx.filter = "none";
     ctx.fillStyle = "black";
