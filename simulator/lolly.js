@@ -10,7 +10,7 @@ const config = {
   spacingMm: 5.5,
   ledSizeMm: 4,
   blurRadius: 1.5,
-  pixelPerMm: 8.2,
+  pixelPerMm: 8.45,
   printIndex: false,
   pattern: {
     numArms: 7,
@@ -23,11 +23,27 @@ if (simulateBigLolly) {
   config.ledSizeMm = 4 / 2.75;
 }
 
+let runAnimation = true;
+
+document.querySelector("#toggle-animation").addEventListener("click", () => {
+  runAnimation = !runAnimation;
+  if (runAnimation) {
+    requestAnimationFrame(drawFrame);
+  } else {
+    document.querySelector(fpsSelector).innerText = "FPS: paused";
+  }
+  document.querySelector("#toggle-animation").innerText = runAnimation
+    ? "Pause Animation"
+    : "Start Animation";
+});
+
 function drawFrame() {
   const ledColors = updateLedColors(config);
   drawLolly(config, ledColors);
 
-  requestAnimationFrame(drawFrame);
+  if (runAnimation) {
+    requestAnimationFrame(drawFrame);
+  }
   updateFPSDisplay();
 }
 

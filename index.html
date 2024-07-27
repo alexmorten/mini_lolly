@@ -10,14 +10,17 @@
 
 <body>
     <h1>Mini Lolly Simulator</h1>
+    <p>
+        <span id="fps">FPS: 0</span>
+        <button id="toggle-animation">Pause Animation</button>
+    </p>
     <canvas id="lollycanvas" width="800" height="800"></canvas>
-    <p id="description">63 LED's arranged in <a
+    <p id="description">63 LEDs arranged in <a
             href="https://en.wikipedia.org/wiki/Fermat%27s_spiral#The_golden_ratio_and_the_golden_angle"
             target="_blank">
             Fermat's spiral with the golden angle
         </a>
     </p>
-    <p id="fps">FPS: 0</p>
     <script type="module" src="simulator/lolly.js"></script>
 </body>
 
