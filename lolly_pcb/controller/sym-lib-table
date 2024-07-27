@@ -1,4 +1,6 @@
 (sym_lib_table
   (version 7)
   (lib (name "esp32_adjusted")(type "KiCad")(uri "${KIPRJMOD}/esp32_adjusted.kicad_sym")(options "")(descr ""))
+  (lib (name "New_Library")(type "KiCad")(uri "${KIPRJMOD}/controller.pretty/components.kicad_sym")(options "")(descr ""))
+  (lib (name "lolly_comp")(type "KiCad")(uri "${KIPRJMOD}/controller.pretty/lolly_comp.kicad_sym")(options "")(descr ""))
 )
