@@ -45,15 +45,21 @@ function drawLEDs(config, ledColors, ctx) {
     var y = ledCoords[i].y + config.radiusMm * config.pixelPerMm;
 
     // more blurred background
-    ctx.filter = "brightness(200%) blur(" + blurRadius * 2 + "px)";
+    ctx.filter = "blur(" + blurRadius * 2 + "px)";
     ctx.beginPath();
     ctx.arc(x, y, (config.ledSizeMm * config.pixelPerMm) / 1, 0, 2 * Math.PI);
     ctx.fill();
 
     // less blurred foreground
-    ctx.filter = "brightness(500%) blur(" + blurRadius + "px)";
+    ctx.filter = "blur(" + blurRadius + "px)";
     ctx.beginPath();
     ctx.arc(x, y, (config.ledSizeMm / 2) * config.pixelPerMm, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // even less blurred foreground
+    ctx.filter = "blur(" + blurRadius / 2 + "px)";
+    ctx.beginPath();
+    ctx.arc(x, y, (config.ledSizeMm / 4) * config.pixelPerMm, 0, 2 * Math.PI);
     ctx.fill();
 
     if (!config.printIndex) {
