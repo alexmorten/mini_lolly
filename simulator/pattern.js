@@ -11,6 +11,6 @@ export function updateLedColors(config) {
     const hueValue = (armHue + hueOffset) % 360;
     ledColors.push(`hsl(${hueValue}, 100%, 50%)`);
   }
-  hueOffset += 6;
+  hueOffset += 2;
   return ledColors;
 }

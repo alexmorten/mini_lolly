@@ -37,36 +37,30 @@ function drawLEDs(config, ledColors, ctx) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  const blurRadius = config.blurRadius * config.pixelPerMm;
-
   for (let i = 0; i < ledCoords.length; i++) {
     ctx.fillStyle = ledColors[i];
-    var x = ledCoords[i].x + config.radiusMm * config.pixelPerMm;
-    var y = ledCoords[i].y + config.radiusMm * config.pixelPerMm;
+    const x = ledCoords[i].x + config.radiusMm * config.pixelPerMm;
+    const y = ledCoords[i].y + config.radiusMm * config.pixelPerMm;
+    const radius = (config.ledSizeMm / 2) * config.pixelPerMm;
 
-    // more blurred background
-    ctx.filter = "blur(" + blurRadius * 2 + "px)";
-    ctx.beginPath();
-    ctx.arc(x, y, (config.ledSizeMm * config.pixelPerMm) / 1, 0, 2 * Math.PI);
-    ctx.fill();
-
-    // less blurred foreground
-    ctx.filter = "blur(" + blurRadius + "px)";
-    ctx.beginPath();
-    ctx.arc(x, y, (config.ledSizeMm / 2) * config.pixelPerMm, 0, 2 * Math.PI);
-    ctx.fill();
-
-    // even less blurred foreground
-    ctx.filter = "blur(" + blurRadius / 2 + "px)";
-    ctx.beginPath();
-    ctx.arc(x, y, (config.ledSizeMm / 4) * config.pixelPerMm, 0, 2 * Math.PI);
-    ctx.fill();
+    // LED glow:
+    // Draws multiple circles with different transparency levels.
+    // The bigger the circle, the more transparent it is.
+    // In the end they get blurred tugether via a CSS filter on the whole canvas.
+    const alphaValues = [0.1, 0.2, 0.4, 1];
+    const sizeMultiples = [4.4, 3.3, 2.2, 1];
+    for (let j = 0; j < alphaValues.length; j++) {
+      ctx.globalAlpha = alphaValues[j];
+      ctx.beginPath();
+      ctx.arc(x, y, radius * sizeMultiples[j], 0, 2 * Math.PI);
+      ctx.fill();
+    }
 
     if (!config.printIndex) {
       continue;
     }
+
     // LED number
-    ctx.filter = "none";
     ctx.fillStyle = "black";
     ctx.fillText(i + 1, x, y);
   }

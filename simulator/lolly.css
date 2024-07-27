@@ -11,6 +11,7 @@ a {
 
 #lollycanvas {
     margin-top: 2em;
+    filter: blur(8px);
 }
 
 #description {
