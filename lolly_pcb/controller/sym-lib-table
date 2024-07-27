@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "esp32_adjusted")(type "KiCad")(uri "${KIPRJMOD}/esp32_adjusted.kicad_sym")(options "")(descr ""))
+)
