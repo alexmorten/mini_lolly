@@ -1,26 +1,49 @@
 import { gammaDecode, gammaEncode } from "./math.js";
 
 let imageID = "teddy-image";
-// imageID = "emoji-image";
+imageID = "emoji-image";
+
+let angle = 0;
 
 export function mapTeddieImageLedColors(config) {
   const ledColors = [];
   for (let i = 0; i < config.ledCount; i++) {
     const c = config.coordinates[i];
 
-    const scale = 0.8;
+    const scale = 1;
     const ledScale = 2;
-    const yOffset = -0.05;
+    const yOffset = 0;
     const xOffset = 0;
 
     const relativeX = (c.x / scale + config.canvasSize / 2) / config.canvasSize + xOffset;
     const relativeY = (c.y / scale + config.canvasSize / 2) / config.canvasSize + yOffset;
     const size = (ledScale * config.ledSizeMm * config.pixelPerMm) / config.canvasSize;
-    const color = averageColor(imageID, relativeX, relativeY, size);
+
+    const rotated = rotatePoint(relativeX, relativeY, angle);
+
+    const color = averageColor(imageID, rotated.x, rotated.y, size);
     // console.log(relativeX, relativeY, size, "==", color);
     ledColors.push(color);
   }
+
+  angle += 0.02;
   return ledColors;
+}
+
+function rotatePoint(x, y, angle) {
+  // Translate the point to the origin
+  let translatedX = x - 0.5;
+  let translatedY = y - 0.5;
+
+  // Rotate the point
+  let rotatedX = translatedX * Math.cos(angle) - translatedY * Math.sin(angle);
+  let rotatedY = translatedX * Math.sin(angle) + translatedY * Math.cos(angle);
+
+  // Translate the point back
+  let finalX = rotatedX + 0.5;
+  let finalY = rotatedY + 0.5;
+
+  return { x: finalX, y: finalY };
 }
 
 function averageColor(imageID, x, y, size) {

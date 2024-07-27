@@ -3,7 +3,7 @@ import { updateLedColors } from "./pattern.js";
 import { mapTeddieImageLedColors } from "./image_mapper.js";
 
 const fpsSelector = "#fps";
-const simulateBigLolly = true;
+const simulateBigLolly = false;
 const mode = "teddie";
 
 const config = {
@@ -44,7 +44,7 @@ if (!img2.complete) {
   });
 }
 
-let runAnimation = false;
+let runAnimation = true;
 
 document.querySelector("#toggle-animation").addEventListener("click", () => {
   runAnimation = !runAnimation;
