@@ -2,6 +2,7 @@ import { drawLolly } from "./draw.js";
 import { updateLedColors } from "./pattern.js";
 
 const fpsSelector = "#fps";
+const simulateBigLolly = false;
 
 const config = {
   ledCount: 63,
@@ -15,6 +16,12 @@ const config = {
     numArms: 7,
   },
 };
+
+if (simulateBigLolly) {
+  config.ledCount = 512;
+  config.spacingMm = 5.5 / 2.75;
+  config.ledSizeMm = 4 / 2.75;
+}
 
 function drawFrame() {
   const ledColors = updateLedColors(config);
