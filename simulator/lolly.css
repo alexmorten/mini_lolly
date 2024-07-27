@@ -1,0 +1,19 @@
+body {
+    background-color: #222;
+    color: #fff;
+    font-family: sans-serif;
+    text-align: center;
+}
+
+a {
+    color: #fff;
+}
+
+#lollycanvas {
+    margin-top: 2em;
+    filter: blur(8px);
+}
+
+#description {
+    margin-top: 2em;
+}
