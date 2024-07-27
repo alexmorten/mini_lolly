@@ -863,6 +863,24 @@
 				)
 			)
 			(pin bidirectional line
+				(at -33.02 17.78 0)
+				(length 2.54)
+				(name "MTDI/JTAG/GPIO41"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "31"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
 				(at 33.02 -22.86 180)
 				(length 2.54)
 				(name "GPIO33"
@@ -917,45 +935,9 @@
 				)
 			)
 			(pin bidirectional line
-				(at -33.02 22.86 0)
-				(length 2.54)
-				(name "MTCK/JTAG/GPIO39"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "35"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin bidirectional line
 				(at 33.02 -30.48 180)
 				(length 2.54)
 				(name "GPIO36"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "36"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin bidirectional line
-				(at -33.02 20.32 0)
-				(length 2.54)
-				(name "MTDO/JTAG/GPIO40"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -989,24 +971,6 @@
 				)
 			)
 			(pin bidirectional line
-				(at -33.02 17.78 0)
-				(length 2.54)
-				(name "MTDI/JTAG/GPIO41"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "37"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin bidirectional line
 				(at 33.02 -35.56 180)
 				(length 2.54)
 				(name "GPIO38"
@@ -1025,16 +989,16 @@
 				)
 			)
 			(pin bidirectional line
-				(at -33.02 15.24 0)
+				(at 33.02 38.1 180)
 				(length 2.54)
-				(name "MTMS/JTAG/GPIO42"
+				(name "GPIO43/U0TXD/PROG"
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
 					)
 				)
-				(number "38"
+				(number "39"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1043,9 +1007,9 @@
 				)
 			)
 			(pin bidirectional line
-				(at 33.02 38.1 180)
+				(at -33.02 22.86 0)
 				(length 2.54)
-				(name "GPIO43/U0TXD/PROG"
+				(name "MTCK/JTAG/GPIO39"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1133,6 +1097,24 @@
 				)
 			)
 			(pin bidirectional line
+				(at -33.02 20.32 0)
+				(length 2.54)
+				(name "MTDO/JTAG/GPIO40"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "40"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
 				(at 33.02 -38.1 180)
 				(length 2.54)
 				(name "GPIO45"
@@ -1154,6 +1136,24 @@
 				(at 0 -43.18 90)
 				(length 2.54) hide
 				(name "GND"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "42"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -33.02 15.24 0)
+				(length 2.54)
+				(name "MTMS/JTAG/GPIO42"
 					(effects
 						(font
 							(size 1.27 1.27)
