@@ -1,10 +1,13 @@
-import { drawLolly } from "./draw.js";
+import { drawLolly, setupCoordinates } from "./draw.js";
 import { updateLedColors } from "./pattern.js";
+import { mapTeddieImageLedColors } from "./image_mapper.js";
 
 const fpsSelector = "#fps";
-const simulateBigLolly = false;
+const simulateBigLolly = true;
+const mode = "teddie";
 
 const config = {
+  canvasSize: 800,
   ledCount: 63,
   radiusMm: 47,
   spacingMm: 5.5,
@@ -23,7 +26,25 @@ if (simulateBigLolly) {
   config.ledSizeMm = 4 / 2.75;
 }
 
-let runAnimation = true;
+setupCoordinates(config);
+
+const img1 = document.querySelector("#teddy-image");
+const img2 = document.querySelector("#emoji-image");
+
+if (!img1.complete) {
+  img1.addEventListener("load", () => {
+    console.log("img1 loaded");
+    requestAnimationFrame(drawFrame);
+  });
+}
+if (!img2.complete) {
+  img2.addEventListener("load", () => {
+    console.log("img2 loaded");
+    requestAnimationFrame(drawFrame);
+  });
+}
+
+let runAnimation = false;
 
 document.querySelector("#toggle-animation").addEventListener("click", () => {
   runAnimation = !runAnimation;
@@ -32,13 +53,25 @@ document.querySelector("#toggle-animation").addEventListener("click", () => {
   } else {
     document.querySelector(fpsSelector).innerText = "FPS: paused";
   }
-  document.querySelector("#toggle-animation").innerText = runAnimation
-    ? "Pause Animation"
-    : "Start Animation";
+  document.querySelector("#toggle-animation").innerText = runAnimation ? "Pause Animation" : "Start Animation";
 });
 
 function drawFrame() {
-  const ledColors = updateLedColors(config);
+  let ledColors;
+  switch (mode) {
+    case "demo":
+      ledColors = updateLedColors(config);
+      break;
+    case "teddie":
+      if (!img1.complete) {
+        return;
+      }
+      if (!img2.complete) {
+        return;
+      }
+      ledColors = mapTeddieImageLedColors(config);
+      break;
+  }
   drawLolly(config, ledColors);
 
   if (runAnimation) {

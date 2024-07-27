@@ -1,11 +1,6 @@
 import { radians, goldenAngle } from "./math.js";
 
-let ledCoords = [];
-
 export function drawLolly(config, ledColors) {
-  if (ledCoords.length === 0) {
-    calculateLedCoordinates(config);
-  }
   var canvas = document.getElementById("lollycanvas");
   var ctx = canvas.getContext("2d");
 
@@ -21,7 +16,8 @@ export function drawLolly(config, ledColors) {
   drawLEDs(config, ledColors, ctx);
 }
 
-function calculateLedCoordinates(config) {
+export function setupCoordinates(config) {
+  const ledCoords = [];
   for (let n = 1; n <= config.ledCount; n++) {
     let angle = radians(n * goldenAngle);
     let radius = Math.sqrt(n) * config.spacingMm * config.pixelPerMm;
@@ -30,6 +26,7 @@ function calculateLedCoordinates(config) {
     // console.log("LED", n, "radius", radius, "x", x, "y", y);
     ledCoords.push({ x, y });
   }
+  config.coordinates = ledCoords;
 }
 
 function drawLEDs(config, ledColors, ctx) {
@@ -37,10 +34,10 @@ function drawLEDs(config, ledColors, ctx) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  for (let i = 0; i < ledCoords.length; i++) {
+  for (let i = 0; i < config.coordinates.length; i++) {
     ctx.fillStyle = ledColors[i];
-    const x = ledCoords[i].x + config.radiusMm * config.pixelPerMm;
-    const y = ledCoords[i].y + config.radiusMm * config.pixelPerMm;
+    const x = config.coordinates[i].x + config.radiusMm * config.pixelPerMm;
+    const y = config.coordinates[i].y + config.radiusMm * config.pixelPerMm;
     const radius = (config.ledSizeMm / 2) * config.pixelPerMm;
 
     // LED glow:
