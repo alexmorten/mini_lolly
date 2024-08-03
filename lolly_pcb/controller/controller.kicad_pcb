@@ -8390,7 +8390,7 @@
 		)
 	)
 	(gr_text "3V3"
-		(at 112.789 111.303 0)
+		(at 113.043 111.303 0)
 		(layer "B.SilkS")
 		(uuid "2f25aa03-a641-4f87-803f-d1ce621a1c71")
 		(effects
