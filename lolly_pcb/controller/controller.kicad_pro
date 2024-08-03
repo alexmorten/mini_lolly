@@ -440,8 +440,12 @@
     }
   },
   "libraries": {
-    "pinned_footprint_libs": [],
-    "pinned_symbol_libs": []
+    "pinned_footprint_libs": [
+      "controller"
+    ],
+    "pinned_symbol_libs": [
+      "lolly_comp"
+    ]
   },
   "meta": {
     "filename": "controller.kicad_pro",

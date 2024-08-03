@@ -1596,6 +1596,177 @@
 				)
 			)
 		)
+		(symbol "lolly_comp:Small_through_hole_button"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Small_through_hole_button_0_1"
+				(rectangle
+					(start -8.89 6.35)
+					(end 7.62 -8.89)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -8.89 1.27) (xy 1.27 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 1.27) (xy 6.35 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -8.89 -1.27) (xy 1.27 -1.27) (xy 6.35 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Small_through_hole_button_1_1"
+				(pin input line
+					(at -11.43 1.27 0)
+					(length 2.54)
+					(name "In1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -11.43 -1.27 0)
+					(length 2.54)
+					(name "In2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 10.16 1.27 180)
+					(length 2.54)
+					(name "Out1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 10.16 -1.27 180)
+					(length 2.54)
+					(name "Out2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "lolly_comp:tp4056_module"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -1751,6 +1922,177 @@
 					(at 7.62 -10.16 90)
 					(length 2.54)
 					(name "Bat_-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "lolly_comp:usb-c_5v_breakout"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "usb-c_5v_breakout_0_1"
+				(rectangle
+					(start -8.89 7.62)
+					(end 8.89 -8.89)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "usb-c_5v_breakout_1_1"
+				(pin power_out line
+					(at 11.43 5.08 180)
+					(length 2.54)
+					(name "VBUS"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 11.43 2.54 180)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 11.43 0 180)
+					(length 2.54)
+					(name "CC1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 11.43 -2.54 180)
+					(length 2.54)
+					(name "D-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 11.43 -5.08 180)
+					(length 2.54)
+					(name "D+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 11.43 -7.62 180)
+					(length 2.54)
+					(name "CC2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2126,6 +2468,16 @@
 	)
 	(wire
 		(pts
+			(xy 224.79 85.09) (xy 231.14 85.09)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "13259e84-c294-4e4b-b96f-01b6ec66c14e")
+	)
+	(wire
+		(pts
 			(xy 92.71 54.61) (xy 96.52 54.61)
 		)
 		(stroke
@@ -2163,6 +2515,46 @@
 			(type default)
 		)
 		(uuid "bb295f99-128b-4738-800a-649523d322d8")
+	)
+	(wire
+		(pts
+			(xy 50.8 156.21) (xy 66.04 156.21)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bed0a49b-51ac-4125-a46f-0931f77ddadb")
+	)
+	(wire
+		(pts
+			(xy 50.8 153.67) (xy 66.04 153.67)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dbb64028-1b79-4a6f-be04-c9f5a4ffec21")
+	)
+	(wire
+		(pts
+			(xy 66.04 156.21) (xy 66.04 165.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e51a7f98-c589-4f1c-8d61-5d57440b28fe")
+	)
+	(wire
+		(pts
+			(xy 66.04 153.67) (xy 66.04 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e6ee0dea-6822-45ed-99ab-9f8933091127")
 	)
 	(wire
 		(pts
@@ -2219,6 +2611,28 @@
 		(uuid "031b4456-4dff-4e7a-9dcf-5b96cb74f4ac")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 87.3058 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "11"
+		(shape input)
+		(at 203.2 85.09 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "07561c15-7cde-407d-8e87-57d32be2d561")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 197.7958 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2889,6 +3303,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 231.14 85.09 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "109d328d-1c33-4ece-b4b9-c8cc7ae14e6c")
+		(property "Reference" "#PWR03"
+			(at 231.14 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 231.14 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 231.14 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 231.14 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 231.14 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ddb9981a-09f2-4296-9db1-affaead8ea9c")
+		)
+		(instances
+			(project "controller"
+				(path "/b7b8772d-ec7d-4c8d-b816-27b13c4e31c6"
+					(reference "#PWR03")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 129.54 33.02 0)
 		(unit 1)
@@ -3015,6 +3495,86 @@
 			(project "controller"
 				(path "/b7b8772d-ec7d-4c8d-b816-27b13c4e31c6"
 					(reference "#PWR04")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "lolly_comp:usb-c_5v_breakout")
+		(at 39.37 158.75 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6ad76c60-f175-481d-9171-61c7c36389f6")
+		(property "Reference" "U3"
+			(at 39.37 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "~"
+			(at 39.37 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "controller:usb-c 5v breakout"
+			(at 39.37 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 39.37 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 39.37 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "5"
+			(uuid "aef10ed4-1f97-49d3-8946-5e6d648ca14a")
+		)
+		(pin "6"
+			(uuid "17108ed7-a1b8-4c54-98c1-414369e8536b")
+		)
+		(pin "4"
+			(uuid "16793e93-cb38-466e-8cfd-c243f9814897")
+		)
+		(pin "1"
+			(uuid "1a153756-218c-4f13-8d66-654dea2eebcd")
+		)
+		(pin "2"
+			(uuid "cf38a8c7-096b-46cc-9da2-5e4a7f4e7dfa")
+		)
+		(pin "3"
+			(uuid "0d90cbed-bd2c-45bc-81ec-9cb39bef8129")
+		)
+		(instances
+			(project ""
+				(path "/b7b8772d-ec7d-4c8d-b816-27b13c4e31c6"
+					(reference "U3")
 					(unit 1)
 				)
 			)
@@ -3475,6 +4035,80 @@
 			(project ""
 				(path "/b7b8772d-ec7d-4c8d-b816-27b13c4e31c6"
 					(reference "#PWR02")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "lolly_comp:Small_through_hole_button")
+		(at 214.63 86.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f63307c0-fc97-4406-aeb5-d2c885098b79")
+		(property "Reference" "U4"
+			(at 213.995 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "~"
+			(at 213.995 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 214.63 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 214.63 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 214.63 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "3"
+			(uuid "d34c1260-6cc8-4fcb-b858-d0cce8ed9a26")
+		)
+		(pin "2"
+			(uuid "52a6b5b9-7534-41f2-9bba-c9830aee6e11")
+		)
+		(pin "4"
+			(uuid "4123bf4e-0bd1-43b9-b5fb-2df1f3f7041d")
+		)
+		(pin "1"
+			(uuid "707746e2-cd7f-4da6-baa7-29d8db7c7e26")
+		)
+		(instances
+			(project ""
+				(path "/b7b8772d-ec7d-4c8d-b816-27b13c4e31c6"
+					(reference "U4")
 					(unit 1)
 				)
 			)
