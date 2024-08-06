@@ -1,10 +1,18 @@
-import { drawLolly, setupCoordinates } from "./draw.js"
-import { updateLedColors } from "./pattern.js"
-import { mapTeddieImageLedColors } from "./image_mapper.js"
+import { drawLolly, setupCoordinates } from "./lib/draw.js"
+
+// import { ColorRings } from "./patterns/color_rings.js"
+import { ColorArms } from "./patterns/color_arms.js"
+import { RotatingImage } from "./patterns/rotating_image.js"
+
+const activePattern = "arms"
+const patterns = {
+	// rings: new ColorRings(),
+	arms: new ColorArms(),
+	rotatingImage: new RotatingImage(),
+}
 
 const fpsSelector = "#fps"
 const simulateBigLolly = false
-const mode = "demo"
 
 const config = {
 	canvasSize: 800,
@@ -28,22 +36,6 @@ if (simulateBigLolly) {
 
 setupCoordinates(config)
 
-const img1 = document.querySelector("#teddy-image")
-const img2 = document.querySelector("#emoji-image")
-
-if (!img1.complete) {
-	img1.addEventListener("load", () => {
-		console.log("img1 loaded")
-		requestAnimationFrame(drawFrame)
-	})
-}
-if (!img2.complete) {
-	img2.addEventListener("load", () => {
-		console.log("img2 loaded")
-		requestAnimationFrame(drawFrame)
-	})
-}
-
 let runAnimation = true
 
 document.querySelector("#toggle-animation").addEventListener("click", () => {
@@ -57,21 +49,8 @@ document.querySelector("#toggle-animation").addEventListener("click", () => {
 })
 
 function drawFrame() {
-	let ledColors
-	switch (mode) {
-		case "demo":
-			ledColors = updateLedColors(config)
-			break
-		case "teddie":
-			if (!img1.complete) {
-				return
-			}
-			if (!img2.complete) {
-				return
-			}
-			ledColors = mapTeddieImageLedColors(config)
-			break
-	}
+	const ledColors = patterns[activePattern].renderColors(config)
+
 	drawLolly(config, ledColors)
 
 	if (runAnimation) {
