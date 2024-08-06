@@ -1,12 +1,12 @@
 import { drawLolly, setupCoordinates } from "./lib/draw.js"
 
-// import { ColorRings } from "./patterns/color_rings.js"
+import { ColorRings } from "./patterns/color_rings.js"
 import { ColorArms } from "./patterns/color_arms.js"
 import { RotatingImage } from "./patterns/rotating_image.js"
 
-const activePattern = "arms"
+const activePattern = "rings"
 const patterns = {
-	// rings: new ColorRings(),
+	rings: new ColorRings(),
 	arms: new ColorArms(),
 	rotatingImage: new RotatingImage(),
 }
@@ -36,7 +36,7 @@ if (simulateBigLolly) {
 
 setupCoordinates(config)
 
-let runAnimation = true
+let runAnimation = false
 
 document.querySelector("#toggle-animation").addEventListener("click", () => {
 	runAnimation = !runAnimation

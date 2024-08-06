@@ -27,6 +27,22 @@ export function setupCoordinates(config) {
 		ledCoords.push({ x, y })
 	}
 	config.coordinates = ledCoords
+
+	const minX = Math.min(...ledCoords.map(c => c.x))
+	const maxX = Math.max(...ledCoords.map(c => c.x))
+	const minY = Math.min(...ledCoords.map(c => c.y))
+	const maxY = Math.max(...ledCoords.map(c => c.y))
+
+	// map coordinates to -1 and 1 for 2D patterns
+	const scale = Math.max(maxX, -minX, maxY, -minY)
+
+	const coords2d = []
+	for (let c of ledCoords) {
+		const x = c.x / scale
+		const y = c.y / scale
+		coords2d.push({ x, y })
+	}
+	config.coordinates2D = coords2d
 }
 
 function drawLEDs(config, ledColors, ctx) {
