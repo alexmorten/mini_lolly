@@ -1,15 +1,8 @@
 import { drawLolly, setupCoordinates } from "./lib/draw.js"
 
-import { ColorRings } from "./patterns/color_rings.js"
-import { ColorArms } from "./patterns/color_arms.js"
-import { RotatingImage } from "./patterns/rotating_image.js"
+import { patterns } from "./patterns.js"
 
-let activePattern = "ColorArms"
-const patterns = {
-	ColorRings: new ColorRings(),
-	ColorArms: new ColorArms(),
-	RotatingImage: new RotatingImage(),
-}
+let activePattern = "ColorRings"
 
 const patternPicker = document.querySelector("#pattern-picker")
 for (const pattern in patterns) {
@@ -20,12 +13,57 @@ function createPatternButton(pattern) {
 	const button = document.createElement("button")
 	button.className = "btn btn-primary"
 	button.innerText = pattern
-	button.addEventListener("click", () => {
-		activePattern = pattern
-		document.querySelector("#active-pattern").innerText = activePattern
-	})
+	button.addEventListener("click", () => switchPattern(pattern))
 	return button
 }
+
+function switchPattern(pattern) {
+	activePattern = pattern
+	updatePatternPickerActive(pattern)
+	renderPatternParameters(pattern)
+}
+
+function updatePatternPickerActive(activePattern) {
+	const divElement = document.querySelector("#pattern-picker")
+	const buttons = divElement.querySelectorAll("button")
+	for (const button of buttons) {
+		if (button.innerText == activePattern) {
+			button.classList.add("active")
+		} else {
+			button.classList.remove("active")
+		}
+	}
+}
+
+function renderPatternParameters(pattern) {
+	const paramsEl = document.querySelector("#pattern-parameters")
+	paramsEl.innerHTML = ""
+
+	if (!patterns[pattern].parameters) {
+		paramsEl.innerText = "No parameters for this pattern"
+		return
+	}
+	const params = patterns[pattern].parameters()
+
+	for (const param of params) {
+		const input = document.createElement("input")
+		input.type = param.type
+		input.value = param.default
+		input.addEventListener("input", event => {
+			console.log("update", param.name, event.target.value)
+			param.update(Number(event.target.value))
+		})
+
+		const label = document.createElement("label")
+		label.innerText = param.name
+		label.appendChild(input)
+
+		paramsEl.appendChild(label)
+	}
+}
+
+// setup pattern switcher and parameters
+switchPattern(activePattern)
 
 const fpsSelector = "#fps"
 const simulateBigLolly = false
@@ -39,9 +77,6 @@ const config = {
 	blurRadius: 1.5,
 	pixelPerMm: 8.45,
 	printIndex: false,
-	pattern: {
-		numArms: 7,
-	},
 }
 
 if (simulateBigLolly) {
@@ -59,8 +94,6 @@ if (runAnimation) {
 } else {
 	document.querySelector("#toggle-animation").innerText = "Start Animation"
 }
-
-document.querySelector("#active-pattern").innerText = activePattern
 
 document.querySelector("#toggle-animation").addEventListener("click", () => {
 	runAnimation = !runAnimation

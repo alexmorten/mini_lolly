@@ -44,7 +44,20 @@ a {
     transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
+.btn.active {
+    background-color: dodgerblue;
+}
+
 #pattern-picker>button {
     margin-left: 0.5em;
     margin-right: 0.5em;
+}
+
+label {
+    display:block;
+    margin-bottom: 1em;
+}
+
+label > input {
+    margin-left: 1em;
 }
