@@ -13,3 +13,38 @@ a {
     margin-top: 2em;
     filter: blur(8px);
 }
+
+.container {
+    display: grid;
+     /* one fixed column and 1fr variable width column */
+    grid-template-columns: 860px 1fr;
+    /* height: 100vh; Full viewport height */
+    min-height: 100px;
+}
+
+.left-column {}
+
+.right-column {}
+
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: .2rem .5rem;
+    font-size: 0.8rem;
+    line-height: 1;
+    border-radius: .25rem;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+#pattern-picker>button {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}

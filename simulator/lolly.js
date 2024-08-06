@@ -4,11 +4,27 @@ import { ColorRings } from "./patterns/color_rings.js"
 import { ColorArms } from "./patterns/color_arms.js"
 import { RotatingImage } from "./patterns/rotating_image.js"
 
-const activePattern = "rings"
+let activePattern = "ColorArms"
 const patterns = {
-	rings: new ColorRings(),
-	arms: new ColorArms(),
-	rotatingImage: new RotatingImage(),
+	ColorRings: new ColorRings(),
+	ColorArms: new ColorArms(),
+	RotatingImage: new RotatingImage(),
+}
+
+const patternPicker = document.querySelector("#pattern-picker")
+for (const pattern in patterns) {
+	patternPicker.appendChild(createPatternButton(pattern))
+}
+
+function createPatternButton(pattern) {
+	const button = document.createElement("button")
+	button.className = "btn btn-primary"
+	button.innerText = pattern
+	button.addEventListener("click", () => {
+		activePattern = pattern
+		document.querySelector("#active-pattern").innerText = activePattern
+	})
+	return button
 }
 
 const fpsSelector = "#fps"
@@ -36,7 +52,15 @@ if (simulateBigLolly) {
 
 setupCoordinates(config)
 
-let runAnimation = false
+let runAnimation = true
+
+if (runAnimation) {
+	document.querySelector("#toggle-animation").innerText = "Pause Animation"
+} else {
+	document.querySelector("#toggle-animation").innerText = "Start Animation"
+}
+
+document.querySelector("#active-pattern").innerText = activePattern
 
 document.querySelector("#toggle-animation").addEventListener("click", () => {
 	runAnimation = !runAnimation

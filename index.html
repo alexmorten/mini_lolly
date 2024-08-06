@@ -9,22 +9,38 @@
 </head>
 
 <body>
-    <h1>Mini Lolly Simulator</h1>
-    <p>
-        <span id="fps">FPS: 0</span>
-        <button id="toggle-animation">Pause Animation</button>
-    </p>
-    <canvas id="lollycanvas" width="800" height="800"></canvas>
-    <p id="description">63 LEDs arranged in <a
-            href="https://en.wikipedia.org/wiki/Fermat%27s_spiral#The_golden_ratio_and_the_golden_angle"
-            target="_blank">
-            Fermat's spiral with the golden angle
-        </a>
-    </p>
+    <div class="container">
+        <div class="left-column">
+            <canvas id="lollycanvas" width="800" height="800"></canvas>
 
-    <img id="teddy-image" src="simulator/img/teddyhead-maroontransparent.png">
-    <img id="emoji-image" src="simulator/img/face-with-tears-of-joy.png">
-    <canvas id="img-mapping-canvas" style="display:none;"></canvas>
+
+            <img id="teddy-image" src="simulator/img/teddyhead-maroontransparent.png" style="display:none;">
+            <img id="emoji-image" src="simulator/img/face-with-tears-of-joy.png" style="display:none;">
+            <canvas id="img-mapping-canvas" style="display:none;">
+
+        </div>
+        <div class="right-column">
+            <h1>Mini Lolly Simulator</h1>
+            <p id="description">
+                63 LEDs arranged in
+                <a href="https://en.wikipedia.org/wiki/Fermat%27s_spiral#The_golden_ratio_and_the_golden_angle"
+                    target="_blank">
+                    Fermat's spiral with the golden angle
+                </a>
+            </p>
+
+            <h2>Controls</h2>
+            <p>
+                <span id="fps">FPS: 0</span>
+                <button id="toggle-animation" class="btn">Pause Animation</button>
+            </p>
+            <h2>Patterns</h2>
+            <p>Active pattern: <span id="active-pattern"> </span></p>
+            <div id="pattern-picker"></div>
+
+
+        </div>
+    </div>
 
     <script type="module" src="simulator/lolly.js"></script>
 </body>
