@@ -124,6 +124,9 @@ void coolLikeIncandescent(CRGB &c, uint8_t phase);
 
 void setup()
 {
+    Serial.begin(115200);
+    Serial.println("initialized");
+
     pinMode(LED_BOARD, OUTPUT);
 
     for (int i = 0; i < NUM_BUTTONS; i++)
@@ -135,9 +138,6 @@ void setup()
     digitalWrite(LED_BOARD, LOW);
 
     delay(1000); // safety startup delay
-
-    Serial.begin(115200);
-    Serial.println("initialized");
 
     FastLED.setBrightness(BRIGHTNESS);
     // FastLED.setMaxPowerInVoltsAndMilliamps(VOLTS, MAX_MA);
