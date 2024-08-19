@@ -696,8 +696,8 @@ int patternIndex = 0;
 #include <WiFi.h>
 
 // Replace with your network credentials
-const char *ssid = "Mini Lolly";
-const char *password = "12345678";
+const char *ssid = "MiniLolly Martin";
+const char *password = "Lumos2024";
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -718,6 +718,39 @@ void setupWifi()
     Serial.println(IP);
 
     server.begin();
+}
+
+// array of strings with pattern names
+String patterns[] = {"Twinkle Fox", "Rings", "Fire2012", "Cylon"};
+
+void checkHTTPRequest()
+{
+    for (int i = 0; i < ARRAY_SIZE(patterns); i++)
+    {
+        if (header.indexOf("GET /" + String(i) + "/on") >= 0)
+        {
+            Serial.println(patterns[i]);
+            patternIndex = i;
+        }
+    }
+}
+
+void renderButtonsHTML(WiFiClient *client)
+{
+    for (int i = 0; i < ARRAY_SIZE(patterns); i++)
+    {
+        // Display current state, and ON/OFF buttons for GPIO 26
+        client->println("<p>" + patterns[i] + "</p>");
+        // If the output26State is off, it displays the ON button
+        if (patternIndex == i)
+        {
+            client->println("<p><a href=\"/" + String(i) + "/on\"><button class=\"button\">ON</button></a></p>");
+        }
+        else
+        {
+            client->println("<p><a href=\"/" + String(i) + "/on\"><button class=\"button button2\">ON</button></a></p>");
+        }
+    }
 }
 
 void loopWifi()
@@ -749,22 +782,7 @@ void loopWifi()
                         client.println("Connection: close");
                         client.println();
 
-                        // turns the GPIOs on and off
-                        if (header.indexOf("GET /0/on") >= 0)
-                        {
-                            Serial.println("Twinkle Fox");
-                            patternIndex = 0;
-                        }
-                        else if (header.indexOf("GET /1/on") >= 0)
-                        {
-                            Serial.println("Rings");
-                            patternIndex = 1;
-                        }
-                        else if (header.indexOf("GET /2/on") >= 0)
-                        {
-                            Serial.println("Fire2012");
-                            patternIndex = 2;
-                        }
+                        checkHTTPRequest();
 
                         // Display the HTML web page
                         client.println("<!DOCTYPE html><html>");
@@ -778,43 +796,9 @@ void loopWifi()
                         client.println(".button2 {background-color: #555555;}</style></head>");
 
                         // Web Page Heading
-                        client.println("<body><h1>ESP32 Web Server</h1>");
+                        client.println("<body><h1>MiniLolly Remote</h1>");
 
-                        // Display current state, and ON/OFF buttons for GPIO 26
-                        client.println("<p>Twinkle Fox</p>");
-                        // If the output26State is off, it displays the ON button
-                        if (patternIndex == 0)
-                        {
-                            client.println("<p><a href=\"/0/on\"><button class=\"button\">ON</button></a></p>");
-                        }
-                        else
-                        {
-                            client.println("<p><a href=\"/0/on\"><button class=\"button button2\">ON</button></a></p>");
-                        }
-
-                        // Display current state, and ON/OFF buttons for GPIO 27
-                        client.println("<p>Rings</p>");
-                        // If the output27State is off, it displays the ON button
-                        if (patternIndex == 1)
-                        {
-                            client.println("<p><a href=\"/1/on\"><button class=\"button\">ON</button></a></p>");
-                        }
-                        else
-                        {
-                            client.println("<p><a href=\"/1/on\"><button class=\"button button2\">ON</button></a></p>");
-                        }
-
-                        // Display current state, and ON/OFF buttons for GPIO 27
-                        client.println("<p>Fire2012</p>");
-                        // If the output27State is off, it displays the ON button
-                        if (patternIndex == 2)
-                        {
-                            client.println("<p><a href=\"/2/on\"><button class=\"button\">ON</button></a></p>");
-                        }
-                        else
-                        {
-                            client.println("<p><a href=\"/2/on\"><button class=\"button button2\">ON</button></a></p>");
-                        }
+                        renderButtonsHTML(&client);
 
                         client.println("</body></html>");
 
