@@ -495,6 +495,54 @@ void loopFire2012()
 
 // ============= End Fire2012 =============
 
+// ============= Start Cylon =============
+
+void fadeall()
+{
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+        leds[i].nscale8(250);
+    }
+}
+
+void loopCylon()
+{
+    static uint8_t hue = 0;
+    // Serial.print("x");
+    // First slide the led in one direction
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+        // Set the i'th led to red
+        leds[i] = CHSV(hue++, 255, 255);
+        // Show the leds
+        FastLED.show();
+        // now that we've shown the leds, reset the i'th led to black
+        // leds[i] = CRGB::Black;
+        fadeall();
+        // Wait a little bit before we loop around and do it again
+        // delay(10);
+        FastLED.delay(1000 / FRAMES_PER_SECOND);
+    }
+    // Serial.print("x");
+
+    // Now go in the other direction.
+    for (int i = (NUM_LEDS)-1; i >= 0; i--)
+    {
+        // Set the i'th led to red
+        leds[i] = CHSV(hue++, 255, 255);
+        // Show the leds
+        FastLED.show();
+        // now that we've shown the leds, reset the i'th led to black
+        // leds[i] = CRGB::Black;
+        fadeall();
+        // Wait a little bit before we loop around and do it again
+        // delay(10);
+        FastLED.delay(1000 / FRAMES_PER_SECOND);
+    }
+}
+
+// ============= End Cylon =============
+
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 float ledsMap[63][2] = {
@@ -825,7 +873,7 @@ void setup()
     chooseNextColorPalette(gTargetPalette);
 }
 
-const int numPatterns = 3;
+const int numPatterns = 4;
 
 void loop()
 {
@@ -849,6 +897,9 @@ void loop()
         break;
     case 2:
         loopFire2012();
+        break;
+    case 3:
+        loopCylon();
         break;
     }
 
