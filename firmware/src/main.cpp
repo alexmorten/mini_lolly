@@ -1,14 +1,10 @@
-/// @file    TwinkleFox.ino
-/// @brief   Twinkling "holiday" lights that fade in and out.
-/// @example TwinkleFox.ino
-
 #include "FastLED.h"
 
 #define NUM_LEDS 63
+#define LED_DATA_PIN 12
 #define LED_TYPE WS2811
 #define COLOR_ORDER GRB
-#define DATA_PIN 12
-// #define CLK_PIN       4
+
 #define VOLTS 5
 #define MAX_MA 500
 #define BRIGHTNESS 50
@@ -112,6 +108,9 @@ CRGB gBackgroundColor = CRGB::Black;
 // fade out slighted 'reddened', similar to how
 // incandescent bulbs change color as they get dim down.
 #define COOL_LIKE_INCANDESCENT 1
+
+// Fire
+#define FRAMES_PER_SECOND 120
 
 CRGBPalette16 gCurrentPalette;
 CRGBPalette16 gTargetPalette;
@@ -400,7 +399,101 @@ void chooseNextColorPalette(CRGBPalette16 &pal)
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 uint8_t gHue = 0;                  // rotating "base color" used by many of the patterns
 
-#define FRAMES_PER_SECOND 240
+// ============= Start Fire2012 =============
+
+// Fire2012 by Mark Kriegsman, July 2012
+// as part of "Five Elements" shown here: http://youtu.be/knWiGsmgycY
+////
+// This basic one-dimensional 'fire' simulation works roughly as follows:
+// There's a underlying array of 'heat' cells, that model the temperature
+// at each point along the line.  Every cycle through the simulation,
+// four steps are performed:
+//  1) All cells cool down a little bit, losing heat to the air
+//  2) The heat from each cell drifts 'up' and diffuses a little
+//  3) Sometimes randomly new 'sparks' of heat are added at the bottom
+//  4) The heat from each cell is rendered as a color into the leds array
+//     The heat-to-color mapping uses a black-body radiation approximation.
+//
+// Temperature is in arbitrary units from 0 (cold black) to 255 (white hot).
+//
+// This simulation scales it self a bit depending on NUM_LEDS; it should look
+// "OK" on anywhere from 20 to 100 LEDs without too much tweaking.
+//
+// I recommend running this simulation at anywhere from 30-100 frames per second,
+// meaning an interframe delay of about 10-35 milliseconds.
+//
+// Looks best on a high-density LED setup (60+ pixels/meter).
+//
+//
+// There are two main parameters you can play with to control the look and
+// feel of your fire: COOLING (used in step 1 above), and SPARKING (used
+// in step 3 above).
+//
+// COOLING: How much does the air cool as it rises?
+// Less cooling = taller flames.  More cooling = shorter flames.
+// Default 50, suggested range 20-100
+#define COOLING 55
+
+// SPARKING: What chance (out of 255) is there that a new spark will be lit?
+// Higher chance = more roaring fire.  Lower chance = more flickery fire.
+// Default 120, suggested range 50-200.
+#define SPARKING 120
+
+bool gReverseDirection = false;
+
+void Fire2012()
+{
+    // Array of temperature readings at each simulation cell
+    static uint8_t heat[NUM_LEDS];
+
+    // Step 1.  Cool down every cell a little
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+        heat[i] = qsub8(heat[i], random8(0, ((COOLING * 10) / NUM_LEDS) + 2));
+    }
+
+    // Step 2.  Heat from each cell drifts 'up' and diffuses a little
+    for (int k = NUM_LEDS - 1; k >= 2; k--)
+    {
+        heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
+    }
+
+    // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
+    if (random8() < SPARKING)
+    {
+        int y = random8(7);
+        heat[y] = qadd8(heat[y], random8(160, 255));
+    }
+
+    // Step 4.  Map from heat cells to LED colors
+    for (int j = 0; j < NUM_LEDS; j++)
+    {
+        CRGB color = HeatColor(heat[j]);
+        int pixelnumber;
+        if (gReverseDirection)
+        {
+            pixelnumber = (NUM_LEDS - 1) - j;
+        }
+        else
+        {
+            pixelnumber = j;
+        }
+        leds[pixelnumber] = color;
+    }
+}
+
+void loopFire2012()
+{
+    // Add entropy to random number generator; we use a lot of it.
+    // random16_add_entropy( random());
+
+    Fire2012(); // run simulation frame
+
+    FastLED.show(); // display this frame
+    FastLED.delay(1000 / FRAMES_PER_SECOND);
+}
+
+// ============= End Fire2012 =============
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
@@ -544,6 +637,7 @@ bool checkButton(int buttonIndex)
 int patternIndex = 0;
 
 // ============================ WIFI code ============================
+// https://randomnerdtutorials.com/esp32-access-point-ap-web-server/
 
 /*********
   Rui Santos
@@ -603,20 +697,25 @@ void loopWifi()
                         // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
                         // and a content-type so the client knows what's coming, then a blank line:
                         client.println("HTTP/1.1 200 OK");
-                        client.println("Content-type:text/html");
+                        client.println("Content-type: text/html");
                         client.println("Connection: close");
                         client.println();
 
                         // turns the GPIOs on and off
-                        if (header.indexOf("GET /26/on") >= 0)
+                        if (header.indexOf("GET /0/on") >= 0)
                         {
                             Serial.println("Twinkle Fox");
                             patternIndex = 0;
                         }
-                        else if (header.indexOf("GET /27/on") >= 0)
+                        else if (header.indexOf("GET /1/on") >= 0)
                         {
                             Serial.println("Rings");
                             patternIndex = 1;
+                        }
+                        else if (header.indexOf("GET /2/on") >= 0)
+                        {
+                            Serial.println("Fire2012");
+                            patternIndex = 2;
                         }
 
                         // Display the HTML web page
@@ -638,11 +737,11 @@ void loopWifi()
                         // If the output26State is off, it displays the ON button
                         if (patternIndex == 0)
                         {
-                            client.println("<p><a href=\"/26/on\"><button class=\"button\">ON</button></a></p>");
+                            client.println("<p><a href=\"/0/on\"><button class=\"button\">ON</button></a></p>");
                         }
                         else
                         {
-                            client.println("<p><a href=\"/26/on\"><button class=\"button button2\">ON</button></a></p>");
+                            client.println("<p><a href=\"/0/on\"><button class=\"button button2\">ON</button></a></p>");
                         }
 
                         // Display current state, and ON/OFF buttons for GPIO 27
@@ -650,12 +749,25 @@ void loopWifi()
                         // If the output27State is off, it displays the ON button
                         if (patternIndex == 1)
                         {
-                            client.println("<p><a href=\"/27/on\"><button class=\"button\">ON</button></a></p>");
+                            client.println("<p><a href=\"/1/on\"><button class=\"button\">ON</button></a></p>");
                         }
                         else
                         {
-                            client.println("<p><a href=\"/27/on\"><button class=\"button button2\">ON</button></a></p>");
+                            client.println("<p><a href=\"/1/on\"><button class=\"button button2\">ON</button></a></p>");
                         }
+
+                        // Display current state, and ON/OFF buttons for GPIO 27
+                        client.println("<p>Fire2012</p>");
+                        // If the output27State is off, it displays the ON button
+                        if (patternIndex == 2)
+                        {
+                            client.println("<p><a href=\"/2/on\"><button class=\"button\">ON</button></a></p>");
+                        }
+                        else
+                        {
+                            client.println("<p><a href=\"/2/on\"><button class=\"button button2\">ON</button></a></p>");
+                        }
+
                         client.println("</body></html>");
 
                         // The HTTP response ends with another blank line
@@ -707,11 +819,13 @@ void setup()
 
     FastLED.setBrightness(BRIGHTNESS);
     // FastLED.setMaxPowerInVoltsAndMilliamps(VOLTS, MAX_MA);
-    FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS)
+    FastLED.addLeds<LED_TYPE, LED_DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS)
         .setCorrection(TypicalLEDStrip);
 
     chooseNextColorPalette(gTargetPalette);
 }
+
+const int numPatterns = 3;
 
 void loop()
 {
@@ -719,7 +833,7 @@ void loop()
     if (buttonPressed)
     {
         patternIndex++;
-        if (patternIndex > 1)
+        if (patternIndex > (numPatterns - 1))
         {
             patternIndex = 0;
         }
@@ -732,6 +846,9 @@ void loop()
         break;
     case 1:
         loopRings();
+        break;
+    case 2:
+        loopFire2012();
         break;
     }
 
