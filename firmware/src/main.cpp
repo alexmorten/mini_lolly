@@ -858,15 +858,15 @@ void renderButtonsHTML(WiFiClient *client)
     for (int i = 0; i < ARRAY_SIZE(patterns); i++)
     {
         // Display current state, and ON/OFF buttons for GPIO 26
-        client->println("<p>" + patterns[i] + "</p>");
+        client->println("<p>" + patterns[i]);
         // If the output26State is off, it displays the ON button
         if (patternIndex == i)
         {
-            client->println("<p><a href=\"/" + String(i) + "/on\"><button class=\"button\">ON</button></a></p>");
+            client->println(" <a href=\"/" + String(i) + "/on\"><button class=\"button\">ON</button></a></p>");
         }
         else
         {
-            client->println("<p><a href=\"/" + String(i) + "/on\"><button class=\"button button2\">ON</button></a></p>");
+            client->println(" <a href=\"/" + String(i) + "/on\"><button class=\"button button2\">ON</button></a></p>");
         }
     }
 }
@@ -909,8 +909,8 @@ void loopWifi()
                         // CSS to style the on/off buttons
                         // Feel free to change the background-color and font-size attributes to fit your preferences
                         client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-                        client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
-                        client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
+                        client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 4px 20px;");
+                        client.println("text-decoration: none; font-size: 20px; margin: 2px; cursor: pointer;}");
                         client.println(".button2 {background-color: #555555;}</style></head>");
 
                         // Web Page Heading
