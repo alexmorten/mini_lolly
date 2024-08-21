@@ -9,9 +9,9 @@
 #define MAX_MA 500
 #define BRIGHTNESS 50
 
-#define NUM_BUTTONS 1
+#define NUM_BUTTONS 2
 #define LED_BOARD 15
-int buttonPins[NUM_BUTTONS] = {0};
+int buttonPins[NUM_BUTTONS] = {0, 5};
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
@@ -822,7 +822,7 @@ void setupWifi()
 }
 
 // array of strings with pattern names
-String patterns[] = {"Twinkle Fox", "Rings", "Fire2012", "Cylon",
+String patterns[] = {"Twinkle Fox", "Rings", "Fire2012", // "Cylon",
                      "Rainbow", "Rainbow with Glitter", "Confetti",
                      "Sinelon", "Juggle", "BPM"};
 
@@ -832,7 +832,7 @@ void (*patternFunctions[])() = {
     loopTwinkleFox,
     loopRings,
     loopFire2012,
-    loopCylon,
+    // loopCylon,
     loopRainbow,
     loopRainbowWithGlitter,
     loopConfetti,
@@ -977,8 +977,9 @@ void setup()
 
 void loop()
 {
-    bool buttonPressed = checkButton(0);
-    if (buttonPressed)
+    bool buttonPressedESP = checkButton(0);
+    bool buttonPressedExternal = checkButton(1);
+    if (buttonPressedESP || buttonPressedExternal)
     {
         patternIndex++;
         if (patternIndex > (numPatterns - 1))
