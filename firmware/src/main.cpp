@@ -1,5 +1,9 @@
 #include "FastLED.h"
 
+// Replace with your network credentials
+const char *ssid = "MiniLolly Teddies";
+const char *password = "Lumos2024";
+
 #define NUM_LEDS 63
 #define LED_DATA_PIN 12
 #define LED_TYPE WS2811
@@ -795,10 +799,6 @@ int patternIndex = 0;
 
 // Load Wi-Fi library
 #include <WiFi.h>
-
-// Replace with your network credentials
-const char *ssid = "MiniLolly Martin";
-const char *password = "Lumos2024";
 
 // Set web server port number to 80
 WiFiServer server(80);
