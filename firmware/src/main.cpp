@@ -1,4 +1,5 @@
 #include "FastLED.h"
+#include "led_config.h"
 #include "animations/twinkle_fox.h"
 #include "animations/fire2012.h"
 #include "animations/cylon.h"
@@ -8,11 +9,6 @@
 // Replace with your network credentials
 const char *ssid = "MiniLolly Manfred";
 const char *password = "Lumos2024";
-
-#define NUM_LEDS 1
-#define LED_DATA_PIN 9
-#define LED_TYPE WS2812B
-#define COLOR_ORDER RGB
 
 #define VOLTS 5
 #define MAX_MA 200

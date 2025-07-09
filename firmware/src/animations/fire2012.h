@@ -1,10 +1,7 @@
 #pragma once
 
 #include "FastLED.h"
-
-#ifndef NUM_LEDS
-#define NUM_LEDS 1
-#endif
+#include "../led_config.h"
 
 // Fire2012 configuration
 #define COOLING 55
