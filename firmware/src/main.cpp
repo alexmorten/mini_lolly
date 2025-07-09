@@ -5,6 +5,7 @@
 #include "animations/cylon.h"
 #include "animations/demo_reel.h"
 #include "animations/rings.h"
+#include "animations/polar_rings.h"
 
 // Replace with your network credentials
 const char *ssid = "MiniLolly Manfred";
@@ -12,7 +13,7 @@ const char *password = "Lumos2024";
 
 #define VOLTS 5
 #define MAX_MA 200
-#define BRIGHTNESS 20
+#define BRIGHTNESS 25
 
 #define NUM_BUTTONS 2
 #define LED_BOARD 15
@@ -104,23 +105,38 @@ void setupWifi()
 }
 
 // array of strings with pattern names
-String patterns[] = {"Twinkle Fox", "Rings", "Fire2012", // "Cylon",
-                     "Rainbow", "Rainbow with Glitter", "Confetti",
-                     "Sinelon", "Juggle", "BPM"};
+String patterns[] = {
+    // "Twinkle Fox",
+     "Rings",
+    //  "Fire2012",
+     // "Cylon",
+"Polar Rings",
+"Polar Spiral",
+"Polar Radial",
+// "Rainbow",
+// "Rainbow with Glitter",
+// "Confetti",
+// "Sinelon",
+// "Juggle",
+// "BPM"
+};
 
 const int numPatterns = ARRAY_SIZE(patterns);
 
 void (*patternFunctions[])() = {
-    loopTwinkleFox,
+    // loopTwinkleFox,
     loopRings,
-    loopFire2012,
+    // loopFire2012,
     // loopCylon,
-    loopRainbow,
-    loopRainbowWithGlitter,
-    loopConfetti,
-    loopSinelon,
-    loopJuggle,
-    loopBpm,
+    loopPolarRings,
+    loopPolarRingsSpiral,
+    loopPolarRingsRadial,
+    // loopRainbow,
+    // loopRainbowWithGlitter,
+    // loopConfetti,
+    // loopSinelon,
+    // loopJuggle,
+    // loopBpm,
 };
 
 void checkHTTPRequest()
