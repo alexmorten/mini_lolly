@@ -2,7 +2,7 @@
 
 // LED configuration
 #define NUM_LEDS 63
-#define LED_DATA_PIN 9
+#define LED_DATA_PIN 12
 #define LED_TYPE WS2812B
 #define COLOR_ORDER RGB
 
