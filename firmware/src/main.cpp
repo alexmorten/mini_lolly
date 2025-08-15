@@ -13,7 +13,6 @@ const char *password = "Lumos2024";
 
 #define VOLTS 5
 #define MAX_MA 200
-#define BRIGHTNESS 25
 
 #define NUM_BUTTONS 2
 #define LED_BOARD 15
@@ -23,6 +22,12 @@ int buttonPins[NUM_BUTTONS] = {0, 5};
 
 CRGBArray<NUM_LEDS> leds;
 
+uint8_t brightness = 15;
+
+void setBrightness(uint8_t b) {
+    brightness = constrain(b, 1, 255);
+    FastLED.setBrightness(brightness);
+}
 
 int buttonStates[NUM_BUTTONS] = {LOW};
 int lastButtonStates[NUM_BUTTONS] = {LOW};
@@ -107,14 +112,14 @@ void setupWifi()
 // array of strings with pattern names
 String patterns[] = {
     // "Twinkle Fox",
-     "Rings",
+"Polar Radial",
+"Rainbow with Glitter",
+    "Rings",
     //  "Fire2012",
      // "Cylon",
 "Polar Rings",
 "Polar Spiral",
-"Polar Radial",
 // "Rainbow",
-// "Rainbow with Glitter",
 // "Confetti",
 // "Sinelon",
 // "Juggle",
@@ -125,14 +130,14 @@ const int numPatterns = ARRAY_SIZE(patterns);
 
 void (*patternFunctions[])() = {
     // loopTwinkleFox,
+    loopPolarRingsRadial,
+    loopRainbowWithGlitter,
     loopRings,
     // loopFire2012,
     // loopCylon,
     loopPolarRings,
     loopPolarRingsSpiral,
-    loopPolarRingsRadial,
     // loopRainbow,
-    // loopRainbowWithGlitter,
     // loopConfetti,
     // loopSinelon,
     // loopJuggle,
@@ -148,6 +153,40 @@ void checkHTTPRequest()
             Serial.println(patterns[i]);
             patternIndex = i;
         }
+    }
+    
+    // Check for brightness control
+    int brightnessIndex = header.indexOf("GET /brightness/");
+    if (brightnessIndex >= 0) {
+        int valueStart = brightnessIndex + 16; // Length of "GET /brightness/"
+        int valueEnd = header.indexOf(" ", valueStart);
+        if (valueEnd == -1) valueEnd = header.indexOf("\n", valueStart);
+        if (valueEnd > valueStart) {
+            String valueStr = header.substring(valueStart, valueEnd);
+            int newBrightness = valueStr.toInt();
+            setBrightness(newBrightness);
+            Serial.print("Brightness set to: ");
+            Serial.println(brightness);
+        }
+    }
+}
+
+void renderBrightnessControlsHTML(WiFiClient *client)
+{
+    client->println("<h2>Brightness: " + String(brightness) + "</h2>");
+    
+    int brightnessLevels[] = {5, 10, 15, 20, 25, 50};
+    int numLevels = 6;
+    
+    for (int i = 0; i < numLevels; i++)
+    {
+        client->print("<a href=\"/brightness/" + String(brightnessLevels[i]) + "\"><button class=\"");
+        if (brightness == brightnessLevels[i]) {
+            client->print("button");
+        } else {
+            client->print("button button2");
+        }
+        client->println("\">" + String(brightnessLevels[i]) + "</button></a>");
     }
 }
 
@@ -215,6 +254,8 @@ void loopWifi()
                         client.println("<body><h1>MiniLolly Remote</h1>");
 
                         renderButtonsHTML(&client);
+                        
+                        renderBrightnessControlsHTML(&client);
 
                         client.println("</body></html>");
 
@@ -265,10 +306,11 @@ void setup()
 
     setupWifi();
 
-    FastLED.setBrightness(BRIGHTNESS);
     // FastLED.setMaxPowerInVoltsAndMilliamps(VOLTS, MAX_MA);
     FastLED.addLeds<LED_TYPE, LED_DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS)
         .setCorrection(TypicalLEDStrip);
+    
+    setBrightness(brightness);
 }
 
 void loop()

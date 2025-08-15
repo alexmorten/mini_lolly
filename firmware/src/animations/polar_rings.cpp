@@ -4,7 +4,7 @@
 extern CRGBArray<NUM_LEDS> leds;
 
 int polarTick = 0;
-int polarTicksForCycle = 240;
+int polarTicksForCycle = 360;
 
 void loopPolarRings()
 {
