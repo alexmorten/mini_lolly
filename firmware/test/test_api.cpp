@@ -2,6 +2,7 @@
 // code, with NVS pointed at a temp directory.
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include <Preferences.h>
 #include <iostream>
 #include <string>
@@ -9,6 +10,7 @@
 std::string NVS_ROOT;
 SerialStub Serial;
 WiFiStub WiFi;
+MDNSStub MDNS;
 
 #include "WebServer.cpp"
 

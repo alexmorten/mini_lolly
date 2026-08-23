@@ -5,6 +5,8 @@
 #include <Arduino.h>
 #include <string>
 #include <fstream>
+#include <iterator>
+#include <cstdio>
 #include <sys/stat.h>
 
 // Set by the test's main() before PresetStore::begin() runs.
@@ -40,6 +42,23 @@ public:
     f.write((const char*)buf, len);
     return f ? len : 0;
   }
+
+  // WifiNet keeps its credentials as strings in its own namespace. Same file
+  // backing as the rest: begin() being called again has to see what a previous
+  // one wrote, which is exactly what the reboot checks lean on.
+  String getString(const char* key, const char* dflt) {
+    std::ifstream f(path(key), std::ios::binary);
+    if (!f) return String(dflt);
+    std::string v((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    return String(v);
+  }
+
+  void putString(const char* key, const char* v) {
+    std::ofstream f(path(key), std::ios::binary | std::ios::trunc);
+    if (f) f << (v ? v : "");
+  }
+
+  void remove(const char* key) { ::remove(path(key).c_str()); }
 
   unsigned char getUChar(const char* key, unsigned char dflt) {
     unsigned char v = dflt;

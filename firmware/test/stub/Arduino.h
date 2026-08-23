@@ -8,6 +8,7 @@
 #include <cstdarg>
 #include <cstdint>
 #include <algorithm>
+#include <chrono>
 
 class String {
 public:
@@ -60,7 +61,12 @@ struct SerialStub {
 };
 extern SerialStub Serial;
 
-inline unsigned long millis() { return 0; }
+// A real clock: WifiNet's timeouts and retry counters are all millis() deltas, so
+// a frozen one leaves every join stuck "connecting".
+inline unsigned long millis() {
+  return (unsigned long)(std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::steady_clock::now().time_since_epoch()).count());
+}
 inline void delay(unsigned long) {}
 
 #ifndef min

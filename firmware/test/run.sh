@@ -2,7 +2,7 @@
 # Off-device checks: builds the real firmware sources against the host stubs in
 # stub/ and runs them. Needs a host C++ compiler, nothing from PlatformIO.
 #
-#   ./run.sh              run the API checks
+#   ./run.sh              run the API and Wi-Fi checks
 #   ./run.sh --serve 8181 serve the real request handler on localhost instead,
 #                         so the simulator (Device URL http://127.0.0.1:8181)
 #                         can be driven against it in a browser
@@ -12,7 +12,7 @@ FW="$DIR/.."
 OUT="${TMPDIR:-/tmp}/mini-lolly-hosttest"
 CXX="${CXX:-c++}"
 FLAGS="-std=c++17 -I $DIR/stub -I $FW/include -I $FW/src"
-SRC="$FW/src/PresetStore.cpp $FW/src/effects.cpp $FW/src/fixmath.cpp"
+SRC="$FW/src/PresetStore.cpp $FW/src/effects.cpp $FW/src/fixmath.cpp $FW/src/WifiNet.cpp"
 
 if [ "$1" = "--serve" ]; then
   PORT="${2:-8181}"
@@ -27,3 +27,8 @@ rm -rf "$OUT/nvs"
 mkdir -p "$OUT/nvs"
 $CXX $FLAGS "$DIR/test_api.cpp" $SRC -o "$OUT/test_api"
 "$OUT/test_api" "$OUT/nvs"
+
+rm -rf "$OUT/nvs-wifi"
+mkdir -p "$OUT/nvs-wifi"
+$CXX $FLAGS "$DIR/test_wifi.cpp" $SRC -o "$OUT/test_wifi"
+"$OUT/test_wifi" "$OUT/nvs-wifi"

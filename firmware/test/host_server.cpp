@@ -2,6 +2,7 @@
 // simulator SPA can be driven against the actual device code.
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include <Preferences.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -12,6 +13,7 @@
 std::string NVS_ROOT;
 SerialStub Serial;
 WiFiStub WiFi;
+MDNSStub MDNS;
 
 #include "WebServer.cpp"
 
@@ -43,6 +45,7 @@ int main(int argc, char** argv) {
   NVS_ROOT = argv[1];
   int port = atoi(argv[2]);
   PresetStore::begin();
+  WifiNet::begin();
 
   int srv = socket(AF_INET, SOCK_STREAM, 0);
   int on = 1;
@@ -60,6 +63,9 @@ int main(int argc, char** argv) {
   for (;;) {
     int fd = accept(srv, nullptr, nullptr);
     if (fd < 0) continue;
+    // On the device this runs every frame; here the only clock is a request, which
+    // is enough because the Wi-Fi card polls while a join is in flight.
+    WifiNet::loop();
     std::string header, body;
     if (readAll(fd, header, body)) {
       WiFiClient c;

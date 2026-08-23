@@ -88,7 +88,9 @@ pio device monitor            # 115200 baud
 ```
 
 ## Device API
-When joined to AP `MiniLolly Manfred` / `Lumos2024`, open `http://192.168.4.1` or use:
+A fresh board is its own access point: join `MiniLolly Manfred` / `Lumos2024` and open
+`http://192.168.4.1`. Once it has been given a network (see **Wi-Fi** below) it is at
+`http://lolly.local` instead. Either way:
 - `GET /api/effects` — the effect and parameter schema
 - `GET /api/state`, `POST /api/active` — `{id}`
 - `GET /api/presets` — full list; `GET /api/presets/<n>` — one preset
@@ -99,9 +101,38 @@ When joined to AP `MiniLolly Manfred` / `Lumos2024`, open `http://192.168.4.1` o
 - `PUT /api/brightness` — `{value}`, applied to the active preset and saved with it
 - `GET /api/backup` — everything that survives a power cycle in one document;
   `POST /api/restore` — the same document back. See **Backup** below.
+- `GET /api/wifi` — radio status; `GET /api/wifi/scan` — networks in range (poll it:
+  the first answer is `{"scanning":true}`)
+- `PUT /api/wifi` — `{ssid, password}`, saved and joined; `DELETE /api/wifi` — forget it.
+  See **Wi-Fi** below.
 
 Routing is substring matching in one `if` chain, so more specific paths must be tested first —
-`GET /api/presets/3` has to precede `GET /api/presets` or the list swallows it.
+`GET /api/presets/3` has to precede `GET /api/presets`, and `GET /api/wifi/scan` has to precede
+`GET /api/wifi`, or the less specific route swallows it.
+
+## Wi-Fi
+`src/WifiNet.cpp` owns the radio and makes one decision: join a saved network if there is one,
+otherwise be an access point. **The AP is the floor** — it needs no infrastructure, so it is
+what the board falls back to whenever joining does not work out, and the board is therefore
+never unreachable because a router moved or a password changed.
+
+- Credentials arrive from the website (`PUT /api/wifi`) and live in NVS under their own
+  `wifinet` namespace, so a restore cannot overwrite them and a backup cannot leak them.
+- They are written when they arrive, not when a join succeeds: a board that cannot reach its
+  network right now (router still booting after a shared power cut) still retries on its own.
+- A join gets `WIFI_STA_ATTEMPTS` tries of `WIFI_STA_TIMEOUT_MS` each, then the AP comes back
+  with the reason kept in `error` — readable exactly when the website can be reached again.
+- Once joined, a link gap has `WIFI_STA_LOST_MS` of grace (the driver retries on its own)
+  before the board decides the network is gone and puts the AP back up.
+- A mode switch drops every socket, including the one that asked for it, so the handler only
+  records the request and `WifiNet::loop()` applies it `WIFI_APPLY_DELAY_MS` later, once the
+  response is out. `takeNetChanged()` then tells `WebServer` to rebind port 80 on whatever
+  interface now exists.
+- On a joined board mDNS publishes `WIFI_HOSTNAME` — `http://lolly.local`, which survives a
+  new DHCP lease, unlike the address nothing on your phone tells you.
+
+`test/test_wifi.cpp` walks all of it against a scripted stub radio: join, reboot-rejoins,
+wrong-password fallback, forget, and an SSID with a backslash in it.
 
 ## Backup
 `GET /api/backup` returns one document with every preset and the device settings — the

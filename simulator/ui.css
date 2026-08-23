@@ -197,6 +197,41 @@ label.check {
   padding: 1px 6px;
 }
 
+/* ---- Wi-Fi scan results --------------------------------------------------- */
+
+/* Same shape as the preset list: a scrolling box of full-width rows, so a busy
+   neighbourhood cannot push the join button off a phone screen. */
+#wifiList {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+#wifiList li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+}
+#wifiList li:last-child { border-bottom: none; }
+#wifiList li:hover { background: var(--surface); }
+/* Monospace already, so four block characters line up into a signal meter. */
+#wifiList .nbars { color: var(--accent); letter-spacing: 1px; flex: 0 0 auto; }
+#wifiList .nname { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#wifiList .nlock { color: var(--dim); font-size: 11px; flex: 0 0 auto; }
+
+/* The Wi-Fi lines are the one place a sentence has to wrap rather than be cut:
+   .selinfo is nowrap because it labels controls, and these are prose. */
+#wifiNow, #wifiErr, #wifiScanInfo, .wrap { white-space: normal; }
+#wifiNow { color: var(--muted); }
+#wifiErr { color: var(--err); }
+
 /* ---- Status --------------------------------------------------------------- */
 
 #devState { color: var(--dim); }

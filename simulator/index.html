@@ -66,6 +66,40 @@
   </section>
 
   <section>
+    <h2>Wi-Fi <span class="selinfo">— stored on the device</span></h2>
+    <div class="row">
+      <span id="wifiNow" class="grow">unknown — connect to the device first</span>
+      <button id="wifiRefresh">↻ Refresh</button>
+    </div>
+    <div class="row" id="wifiErrRow" hidden><span class="selinfo err" id="wifiErr"></span></div>
+    <div class="row">
+      <button id="wifiScan">Scan</button>
+      <span class="selinfo grow" id="wifiScanInfo">pick a network, or type one below</span>
+    </div>
+    <ul id="wifiList" hidden></ul>
+    <div class="row">
+      <label for="wifiSsid">Network</label>
+      <input type="text" id="wifiSsid" class="grow" maxlength="32" placeholder="network name (SSID)"
+             autocomplete="off" spellcheck="false">
+    </div>
+    <div class="row">
+      <label for="wifiPass">Password</label>
+      <input type="password" id="wifiPass" class="grow" maxlength="64" placeholder="leave empty if open"
+             autocomplete="off" spellcheck="false">
+      <label class="check"><input type="checkbox" id="wifiShowPass"> show</label>
+    </div>
+    <div class="row">
+      <button class="primary" id="wifiJoin">Save &amp; join</button>
+      <button class="danger" id="wifiForget" disabled>Forget network</button>
+    </div>
+    <div class="row">
+      <span class="selinfo wrap">Joining takes the board off its own AP, so this page loses it. Rejoin the
+        network you named and open http://lolly.local. A join that fails brings the AP back within
+        about half a minute — the board is never left unreachable.</span>
+    </div>
+  </section>
+
+  <section>
     <h2>Backup</h2>
     <div class="row">
       <button id="backupExport">Export all</button>

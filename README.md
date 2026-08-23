@@ -21,6 +21,10 @@ and import the whole setup.
 Open it against a device by joining the AP `MiniLolly Manfred` (password `Lumos2024`) and
 visiting <http://192.168.4.1>. It connects to whatever origin served it, so nothing to set up.
 
+The Wi-Fi card in that page hands the board a network of its own to join, after which it lives
+at <http://lolly.local> and the AP is gone. Nothing is lost if the join fails or the network
+later disappears: the board brings its own AP back up, so the address above always gets you in.
+
 To run it as a plain simulator with no device in reach, serve the repo and open it — it falls
 back to a local preset list and says so:
 

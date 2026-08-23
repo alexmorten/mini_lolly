@@ -424,6 +424,7 @@ function connect(auto) {
       state.sel = 0;
       state.dirty = false;
       setStatus('connected · ' + state.presets.length + ' presets', 'on');
+      refreshWifi();
       return api('/api/state');
     })
     .then(function (st) {
@@ -804,6 +805,174 @@ document.getElementById('bright').addEventListener('change', function (e) {
       .catch(function (err) { setStatus(err.message, 'err'); });
   }
 });
+// ---------------------------------------------------------------- wi-fi
+// The device decides which network it is on; this is only the form for telling it
+// and the poll that says where it landed. Everything here needs a connection —
+// there is no offline stand-in, because there is no radio to simulate.
+var wifiScanTimer = null, wifiScanTries = 0;
+
+function el(id) { return document.getElementById(id); }
+
+function rssiBars(rssi) {
+  // Four buckets, drawn as filled blocks. dBm is negative and logarithmic, so the
+  // thresholds are the usual "excellent / good / fair / weak" ones.
+  var n = rssi >= -55 ? 4 : rssi >= -67 ? 3 : rssi >= -78 ? 2 : 1;
+  return '\u2588'.repeat(n) + '\u2591'.repeat(4 - n);
+}
+
+function renderWifi(w) {
+  var txt;
+  if (w.mode === 'sta') {
+    txt = 'On \u201c' + w.ssid + '\u201d \u00b7 ' + rssiBars(w.rssi) + ' ' + w.rssi + ' dBm' +
+          ' \u00b7 http://' + w.ip + ' \u00b7 http://' + w.hostname + '.local';
+  } else if (w.mode === 'connecting') {
+    txt = 'Joining \u201c' + w.ssid + '\u201d\u2026 the AP is down while it tries';
+  } else {
+    txt = 'Own access point \u201c' + w.apSsid + '\u201d \u00b7 http://' + w.ip +
+          (w.configured ? ' \u00b7 saved network: \u201c' + w.ssid + '\u201d' : ' \u00b7 no network saved');
+  }
+  if (w.applying) txt += ' \u00b7 applying a change\u2026';
+  el('wifiNow').textContent = txt;
+
+  // Only meaningful beside the AP: in station mode the last error is history.
+  var showErr = w.error && w.mode !== 'sta';
+  el('wifiErrRow').hidden = !showErr;
+  if (showErr) el('wifiErr').textContent = 'Last attempt on \u201c' + w.ssid + '\u201d failed: ' + w.error;
+
+  // Prefilled so a retry after a typo is one keystroke, not the whole name again.
+  if (w.configured && !el('wifiSsid').value) el('wifiSsid').value = w.ssid;
+  el('wifiForget').disabled = !state.connected || !w.configured;
+}
+
+function refreshWifi() {
+  if (!state.connected) { setStatus('connect to a device first', 'err'); return; }
+  api('/api/wifi').then(renderWifi)
+    .catch(function (e) { setStatus('Wi-Fi status failed: ' + e.message, 'err'); });
+}
+
+function renderScan(nets) {
+  var list = el('wifiList');
+  list.textContent = '';
+  list.hidden = !nets.length;
+  nets.sort(function (a, b) { return b.rssi - a.rssi; }).forEach(function (n) {
+    var li = document.createElement('li');
+    var bars = document.createElement('span');
+    bars.className = 'nbars';
+    bars.textContent = rssiBars(n.rssi);
+    var name = document.createElement('span');
+    name.className = 'nname';
+    name.textContent = n.ssid;
+    var lock = document.createElement('span');
+    lock.className = 'nlock';
+    lock.textContent = n.open ? 'open' : '\ud83d\udd12';
+    li.appendChild(bars);
+    li.appendChild(name);
+    li.appendChild(lock);
+    li.addEventListener('click', function () {
+      el('wifiSsid').value = n.ssid;
+      el('wifiPass').value = '';
+      // An open network needs nothing typed, so send focus where it is useful.
+      (n.open ? el('wifiJoin') : el('wifiPass')).focus();
+    });
+    list.appendChild(li);
+  });
+}
+
+// The device scans in the background so its render loop keeps running, which means
+// the first answer is "scanning" and the results arrive on a later poll.
+function pollScan() {
+  api('/api/wifi/scan').then(function (r) {
+    if (r.scanning && ++wifiScanTries < 15) {
+      wifiScanTimer = setTimeout(pollScan, 800);
+      return;
+    }
+    clearTimeout(wifiScanTimer);
+    wifiScanTimer = null;
+    var nets = r.networks || [];
+    renderScan(nets);
+    el('wifiScanInfo').textContent =
+      r.error ? r.error :
+      nets.length ? nets.length + (nets.length === 1 ? ' network' : ' networks') + ' found — pick one' :
+      r.scanning ? 'scan did not finish — try again' : 'nothing found — try again';
+  }).catch(function (e) {
+    clearTimeout(wifiScanTimer);
+    wifiScanTimer = null;
+    el('wifiScanInfo').textContent = 'scan failed: ' + e.message;
+  });
+}
+
+// Both changes settle by themselves, so this just waits for the radio to stop
+// moving and then says where it landed. `goal` is the mode that means it worked —
+// 'sta' for a join, 'ap' for a forget, where ending up an access point is the
+// point rather than the failure.
+function watchWifi(goal, tries) {
+  if (tries > 30) return;
+  setTimeout(function () {
+    api('/api/wifi').then(function (w) {
+      renderWifi(w);
+      if (w.mode === 'connecting' || w.applying) return watchWifi(goal, tries + 1);
+      if (w.mode === goal && goal === 'sta') {
+        setStatus('on “' + w.ssid + '” · http://' + w.hostname + '.local', 'on');
+      } else if (w.mode === goal) {
+        setStatus('back on the “' + w.apSsid + '” access point · nothing saved', 'on');
+      } else {
+        setStatus('could not join “' + w.ssid + '”: ' + (w.error || 'unknown') +
+                  ' — the AP is back up', 'err');
+      }
+    }).catch(function () {
+      // Expected on a join: this page was very likely on the AP the board just
+      // dropped, so a dead poll is the normal outcome rather than a failure.
+      setStatus(goal === 'sta'
+        ? 'the board left the AP — rejoin the network you named and open http://lolly.local'
+        : 'lost the board while it came back up as an access point — rejoin “' +
+          'MiniLolly Manfred' + '”', '');
+    });
+  }, 2000);
+}
+
+el('wifiRefresh').addEventListener('click', refreshWifi);
+el('wifiScan').addEventListener('click', function () {
+  if (!state.connected) { setStatus('connect to a device first', 'err'); return; }
+  clearTimeout(wifiScanTimer);
+  wifiScanTries = 0;
+  el('wifiScanInfo').textContent = 'scanning…';
+  pollScan();
+});
+el('wifiShowPass').addEventListener('change', function (e) {
+  el('wifiPass').type = e.target.checked ? 'text' : 'password';
+});
+// The device answers, then switches the radio — so the response arrives but every
+// later request may not, because this page is very likely on the AP that just went
+// away. That is not a failure, and the message has to say so rather than leave the
+// user staring at a dead poll.
+el('wifiJoin').addEventListener('click', function () {
+  if (!state.connected) { setStatus('connect to a device first', 'err'); return; }
+  var ssid = el('wifiSsid').value.trim();
+  if (!ssid) { setStatus('type a network name first', 'err'); return; }
+  if (!confirm('Save “' + ssid + '” and join it?\n\n' +
+               'The board leaves its own Wi-Fi AP to try, so this page will lose it. ' +
+               'If the join works the board is at http://lolly.local on that network; ' +
+               'if it does not, the AP comes back within about a minute.')) return;
+  setStatus('sending credentials…');
+  post('/api/wifi', { ssid: ssid, password: el('wifiPass').value }, 'PUT').then(function (w) {
+    renderWifi(w);
+    setStatus('saved “' + ssid + '” — the board is switching over', 'on');
+    // Still worth polling: a laptop that reaches the board over the network it is
+    // joining, or the host test server, stays reachable throughout.
+    watchWifi('sta', 0);
+  }).catch(function (e) { setStatus('join failed: ' + e.message, 'err'); });
+});
+el('wifiForget').addEventListener('click', function () {
+  if (!state.connected) { setStatus('connect to a device first', 'err'); return; }
+  if (!confirm('Forget the saved network?\n\n' +
+               'The board comes back up as its own “MiniLolly Manfred” access point.')) return;
+  setStatus('forgetting the network…');
+  api('/api/wifi', { method: 'DELETE' }).then(function (w) {
+    renderWifi(w);
+    watchWifi('ap', 0);
+  }).catch(function (e) { setStatus('forget failed: ' + e.message, 'err'); });
+});
+
 document.getElementById('save').addEventListener('click', save);
 document.getElementById('backupExport').addEventListener('click', exportAll);
 document.getElementById('backupImport').addEventListener('click', importAll);

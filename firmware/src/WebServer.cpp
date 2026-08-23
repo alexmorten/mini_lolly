@@ -1,4 +1,5 @@
 #include "WebServer.h"
+#include "WifiNet.h"
 #include "PresetStore.h"
 #include "effects.h"
 #include "Config.h"
@@ -385,6 +386,38 @@ static void handleRequest(WiFiClient& client, const String& header, const String
     return;
   }
 
+  // ---- Wi-Fi ----
+  // The scan route first: routing is substring matching, so "GET /api/wifi" also
+  // matches "GET /api/wifi/scan" and would answer it with the status document.
+  if (isGet && header.indexOf("GET /api/wifi/scan") >= 0) {
+    WifiNet::startScan();
+    sendJson(client, 200, WifiNet::scanJson());
+    return;
+  }
+  if (isGet && header.indexOf("GET /api/wifi") >= 0) {
+    sendJson(client, 200, WifiNet::statusJson());
+    return;
+  }
+
+  // Saves the credentials and joins. The switch out of AP mode drops this very
+  // socket, so the response goes out first and WifiNet applies the change a
+  // moment later from the render loop.
+  if (isPut && header.indexOf("PUT /api/wifi") >= 0) {
+    char ssid[33], pass[65];
+    jsonStr(body.c_str(), "ssid", ssid, sizeof(ssid));
+    jsonStr(body.c_str(), "password", pass, sizeof(pass));
+    if (!ssid[0]) { sendJson(client, 400, "{\"error\":\"ssid required\"}"); return; }
+    WifiNet::requestJoin(ssid, pass);
+    sendJson(client, 200, WifiNet::statusJson());
+    return;
+  }
+
+  if (isDelete && header.indexOf("DELETE /api/wifi") >= 0) {
+    WifiNet::requestForget();
+    sendJson(client, 200, WifiNet::statusJson());
+    return;
+  }
+
   client.print("HTTP/1.1 404 Not Found\r\nContent-Length: 9\r\nConnection: close\r\n\r\nNot found");
 }
 
@@ -392,18 +425,26 @@ namespace LollyWeb {
 
 void begin() {
   Serial.printf("SPA: embedded (%u bytes)\n", (unsigned)SPA_GZ_LEN);
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("AP IP: ");
-  Serial.println(WiFi.softAPIP());
+  // Which network the board ends up on is WifiNet's decision, not this file's:
+  // a saved one if there is one, its own AP otherwise.
+  WifiNet::begin();
   s_server.begin();
 }
 
 void end() {
-  WiFi.softAPdisconnect(true);
+  WifiNet::end();
 }
 
 void loop() {
+  WifiNet::loop();
+  // The listening socket belongs to an interface that has just been taken down and
+  // replaced, so rebind it — otherwise a board that joins a network (or falls back
+  // to its AP) comes up on the new address with nothing answering on port 80.
+  if (WifiNet::takeNetChanged()) {
+    s_server.end();
+    s_server.begin();
+  }
+
   WiFiClient client = s_server.accept();
   if (!client) return;
 
