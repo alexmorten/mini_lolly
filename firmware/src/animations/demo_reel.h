@@ -1,24 +1,16 @@
 #pragma once
 
 #include "FastLED.h"
-#include "../led_config.h"
+#include "../effects.h"
 
-extern uint8_t gCurrentPatternNumber;
-extern uint8_t gHue;
-
-// Function declarations
-void rainbow();
-void addGlitter(fract8 chanceOfGlitter);
-void rainbowWithGlitter();
-void confetti();
-void sinelon();
-void bpm();
-void juggle();
-void loopDemoReel(int index);
-void nextPattern();
-void loopRainbow();
-void loopRainbowWithGlitter();
-void loopConfetti();
-void loopSinelon();
-void loopJuggle();
-void loopBpm();
+// The keepers from FastLED's DemoReel100. Each renders one frame; the caller
+// owns show(). Plain `rainbow` is gone — EFFECT_RAINBOW does the same thing with
+// an axis, a scale and a speed behind it.
+//
+// All of them used to key off millis() through beatsin16() and an EVERY_N hue
+// counter, which left `speed` with nothing to act on. They read the scaled clock
+// out of the context instead, so the speed slider reaches them too.
+void rainbowGlitterFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count);
+void confettiFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count);
+void sinelonFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count);
+void bpmFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count);

@@ -1,15 +1,30 @@
 #include "twinkle_fox.h"
 
-extern CRGBArray<NUM_LEDS> leds;
-
 // Background color for 'unlit' pixels
-CRGB gBackgroundColor = CRGB::Black;
+static CRGB gBackgroundColor = CRGB::Black;
 
-CRGBPalette16 gCurrentPalette;
-CRGBPalette16 gTargetPalette;
+static CRGBPalette16 gCurrentPalette;
+static CRGBPalette16 gTargetPalette;
 
-void loopTwinkleFox()
+static CRGB computeOneTwinkle(uint32_t ms, uint8_t salt);
+static uint8_t attackDecayWave8(uint8_t i);
+static void coolLikeIncandescent(CRGB &c, uint8_t phase);
+static void chooseNextColorPalette(CRGBPalette16 &pal);
+static void drawTwinkles(CRGB *leds, uint16_t count);
+
+void twinkleFoxFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count)
 {
+    // Both palettes start out all-black, and EVERY_N_SECONDS does not fire on its
+    // first call — so without this the board sat dark for the first
+    // SECONDS_PER_PALETTE seconds, which read as the effect doing nothing at all.
+    static bool paletteReady = false;
+    if (!paletteReady)
+    {
+        paletteReady = true;
+        chooseNextColorPalette(gTargetPalette);
+        gCurrentPalette = gTargetPalette;
+    }
+
     EVERY_N_SECONDS(SECONDS_PER_PALETTE)
     {
         chooseNextColorPalette(gTargetPalette);
@@ -20,12 +35,10 @@ void loopTwinkleFox()
         nblendPaletteTowardPalette(gCurrentPalette, gTargetPalette, 12);
     }
 
-    drawTwinkles(leds);
-
-    FastLED.show();
+    drawTwinkles(leds, count);
 }
 
-void drawTwinkles(CRGBSet &L)
+static void drawTwinkles(CRGB *leds, uint16_t count)
 {
     // "PRNG16" is the pseudorandom number generator
     // It MUST be reset to the same starting value each time
@@ -65,8 +78,9 @@ void drawTwinkles(CRGBSet &L)
 
     uint8_t backgroundBrightness = bg.getAverageLight();
 
-    for (CRGB &pixel : L)
+    for (uint16_t idx = 0; idx < count; idx++)
     {
+        CRGB &pixel = leds[idx];
         PRNG16 = (uint16_t)(PRNG16 * 2053) + 1384; // next 'random' number
         uint16_t myclockoffset16 = PRNG16;         // use that number as clock offset
         PRNG16 = (uint16_t)(PRNG16 * 2053) + 1384; // next 'random' number
@@ -103,7 +117,7 @@ void drawTwinkles(CRGBSet &L)
     }
 }
 
-CRGB computeOneTwinkle(uint32_t ms, uint8_t salt)
+static CRGB computeOneTwinkle(uint32_t ms, uint8_t salt)
 {
     uint16_t ticks = ms >> (8 - TWINKLE_SPEED);
     uint8_t fastcycle8 = ticks;
@@ -135,7 +149,7 @@ CRGB computeOneTwinkle(uint32_t ms, uint8_t salt)
     return c;
 }
 
-uint8_t attackDecayWave8(uint8_t i)
+static uint8_t attackDecayWave8(uint8_t i)
 {
     if (i < 86)
     {
@@ -148,7 +162,7 @@ uint8_t attackDecayWave8(uint8_t i)
     }
 }
 
-void coolLikeIncandescent(CRGB &c, uint8_t phase)
+static void coolLikeIncandescent(CRGB &c, uint8_t phase)
 {
     if (phase < 128)
         return;
@@ -159,7 +173,7 @@ void coolLikeIncandescent(CRGB &c, uint8_t phase)
 }
 
 // Color palette definitions
-const TProgmemRGBPalette16 RedGreenWhite_p FL_PROGMEM =
+static const TProgmemRGBPalette16 RedGreenWhite_p FL_PROGMEM =
     {CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red,
      CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red,
      CRGB::Red, CRGB::Red, CRGB::Gray, CRGB::Gray,
@@ -167,19 +181,19 @@ const TProgmemRGBPalette16 RedGreenWhite_p FL_PROGMEM =
 
 #define Holly_Green 0x00580c
 #define Holly_Red 0xB00402
-const TProgmemRGBPalette16 Holly_p FL_PROGMEM =
+static const TProgmemRGBPalette16 Holly_p FL_PROGMEM =
     {Holly_Green, Holly_Green, Holly_Green, Holly_Green,
      Holly_Green, Holly_Green, Holly_Green, Holly_Green,
      Holly_Green, Holly_Green, Holly_Green, Holly_Green,
      Holly_Green, Holly_Green, Holly_Green, Holly_Red};
 
-const TProgmemRGBPalette16 RedWhite_p FL_PROGMEM =
+static const TProgmemRGBPalette16 RedWhite_p FL_PROGMEM =
     {CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red,
      CRGB::Gray, CRGB::Gray, CRGB::Gray, CRGB::Gray,
      CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red,
      CRGB::Gray, CRGB::Gray, CRGB::Gray, CRGB::Gray};
 
-const TProgmemRGBPalette16 BlueWhite_p FL_PROGMEM =
+static const TProgmemRGBPalette16 BlueWhite_p FL_PROGMEM =
     {CRGB::Blue, CRGB::Blue, CRGB::Blue, CRGB::Blue,
      CRGB::Blue, CRGB::Blue, CRGB::Blue, CRGB::Blue,
      CRGB::Blue, CRGB::Blue, CRGB::Blue, CRGB::Blue,
@@ -187,13 +201,13 @@ const TProgmemRGBPalette16 BlueWhite_p FL_PROGMEM =
 
 #define HALFFAIRY ((CRGB::FairyLight & 0xFEFEFE) / 2)
 #define QUARTERFAIRY ((CRGB::FairyLight & 0xFCFCFC) / 4)
-const TProgmemRGBPalette16 FairyLight_p FL_PROGMEM =
+static const TProgmemRGBPalette16 FairyLight_p FL_PROGMEM =
     {CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight,
      HALFFAIRY, HALFFAIRY, CRGB::FairyLight, CRGB::FairyLight,
      QUARTERFAIRY, QUARTERFAIRY, CRGB::FairyLight, CRGB::FairyLight,
      CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight, CRGB::FairyLight};
 
-const TProgmemRGBPalette16 Snow_p FL_PROGMEM =
+static const TProgmemRGBPalette16 Snow_p FL_PROGMEM =
     {0x304048, 0x304048, 0x304048, 0x304048,
      0x304048, 0x304048, 0x304048, 0x304048,
      0x304048, 0x304048, 0x304048, 0x304048,
@@ -204,7 +218,7 @@ const TProgmemRGBPalette16 Snow_p FL_PROGMEM =
 #define C9_Green 0x046002
 #define C9_Blue 0x070758
 #define C9_White 0x606820
-const TProgmemRGBPalette16 RetroC9_p FL_PROGMEM =
+static const TProgmemRGBPalette16 RetroC9_p FL_PROGMEM =
     {C9_Red, C9_Orange, C9_Red, C9_Orange,
      C9_Orange, C9_Red, C9_Orange, C9_Red,
      C9_Green, C9_Green, C9_Green, C9_Green,
@@ -214,14 +228,14 @@ const TProgmemRGBPalette16 RetroC9_p FL_PROGMEM =
 #define Ice_Blue1 0x0C1040
 #define Ice_Blue2 0x182080
 #define Ice_Blue3 0x5080C0
-const TProgmemRGBPalette16 Ice_p FL_PROGMEM =
+static const TProgmemRGBPalette16 Ice_p FL_PROGMEM =
     {
         Ice_Blue1, Ice_Blue1, Ice_Blue1, Ice_Blue1,
         Ice_Blue1, Ice_Blue1, Ice_Blue1, Ice_Blue1,
         Ice_Blue1, Ice_Blue1, Ice_Blue1, Ice_Blue1,
         Ice_Blue2, Ice_Blue2, Ice_Blue2, Ice_Blue3};
 
-const TProgmemRGBPalette16 *ActivePaletteList[] = {
+static const TProgmemRGBPalette16 *ActivePaletteList[] = {
     &RetroC9_p,
     &BlueWhite_p,
     &RainbowColors_p,
@@ -233,7 +247,7 @@ const TProgmemRGBPalette16 *ActivePaletteList[] = {
     &Holly_p,
     &Ice_p};
 
-void chooseNextColorPalette(CRGBPalette16 &pal)
+static void chooseNextColorPalette(CRGBPalette16 &pal)
 {
     const uint8_t numberOfPalettes = sizeof(ActivePaletteList) / sizeof(ActivePaletteList[0]);
     static uint8_t whichPalette = -1;

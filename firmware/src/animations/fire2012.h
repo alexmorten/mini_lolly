@@ -1,15 +1,13 @@
 #pragma once
 
 #include "FastLED.h"
-#include "../led_config.h"
+#include "../effects.h"
 
-// Fire2012 configuration
+// Fire2012 configuration. COOLING is the baseline; `scale` scales it, so a
+// higher scale gives shorter flames.
 #define COOLING 55
 #define SPARKING 120
-#define FRAMES_PER_SECOND 120
 
-extern bool gReverseDirection;
-
-// Function declarations
-void loopFire2012();
-void Fire2012();
+// Renders one frame; the caller owns show(). `speed` sets how fast the heat
+// simulation steps, `scale` how quickly it cools.
+void fire2012Frame(const EffectCtx &ctx, CRGB *leds, uint16_t count);

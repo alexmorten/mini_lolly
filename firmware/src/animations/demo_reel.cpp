@@ -1,100 +1,56 @@
 #include "demo_reel.h"
+#include "circle_order.h"
 
-extern CRGBArray<NUM_LEDS> leds;
-
-uint8_t gCurrentPatternNumber = 0;
-uint8_t gHue = 0;
-
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
-
-void rainbow()
+// The shared "base color" that all of these rotate through. It used to be a
+// global bumped by an EVERY_N_MILLISECONDS(20) counter; deriving it from the
+// scaled clock instead means one preset can drift slowly while another races,
+// and neither carries the other's hue over when you switch.
+static uint8_t baseHue(const EffectCtx &ctx)
 {
-    // FastLED's built-in rainbow generator
-    fill_rainbow(leds, NUM_LEDS, gHue, 7);
+    return (uint8_t)ftoInt(fmul(ffrac(fmul(ctx.ts, ffromf(0.2f))), ffromi(255)));
 }
 
-void addGlitter(fract8 chanceOfGlitter)
+// A dot going round the board at `rate` laps per unit of scaled time, in angular
+// order so it sweeps rather than scattering, and wrapping so it keeps going.
+// Stands in for beatsin16() now that the beat has to follow the speed knob.
+static uint16_t spinPos(const EffectCtx &ctx, float rate, uint16_t count)
 {
-    if (random8() < chanceOfGlitter)
+    return circleIndex(circleSlot(fmul(ctx.ts, ffromf(rate)), count), count);
+}
+
+void rainbowGlitterFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count)
+{
+    fill_rainbow(leds, count, baseHue(ctx), 7);
+    if (random8() < 80)
     {
-        leds[random16(NUM_LEDS)] += CRGB::White;
+        leds[random16(count)] += CRGB::White;
     }
 }
 
-void rainbowWithGlitter()
-{
-    // built-in FastLED rainbow, plus some random sparkly glitter
-    rainbow();
-    addGlitter(80);
-}
-
-void confetti()
+void confettiFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count)
 {
     // random colored speckles that blink in and fade smoothly
-    fadeToBlackBy(leds, NUM_LEDS, 10);
-    int pos = random16(NUM_LEDS);
-    leds[pos] += CHSV(gHue + random8(64), 200, 255);
+    fadeToBlackBy(leds, count, 10);
+    int pos = random16(count);
+    leds[pos] += CHSV(baseHue(ctx) + random8(64), 200, 255);
 }
 
-void sinelon()
+void sinelonFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count)
 {
-    // a colored dot sweeping back and forth, with fading trails
-    fadeToBlackBy(leds, NUM_LEDS, 20);
-    int pos = beatsin16(13, 0, NUM_LEDS - 1);
-    leds[pos] += CHSV(gHue, 255, 192);
+    // a colored dot going round the board, with fading trails behind it
+    fadeToBlackBy(leds, count, 20);
+    leds[spinPos(ctx, 0.2f, count)] += CHSV(baseHue(ctx), 255, 192);
 }
 
-void bpm()
+void bpmFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count)
 {
     // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
-    uint8_t BeatsPerMinute = 128;
     CRGBPalette16 palette = PartyColors_p;
-    uint8_t beat = beatsin8(BeatsPerMinute, 64, 255);
-    for (int i = 0; i < NUM_LEDS; i++)
+    uint8_t hue = baseHue(ctx);
+    fix16_t pulse = fadd(FIX_HALF, fmul(fsinTurns(fmul(ctx.ts, ffromf(2.13f))), FIX_HALF));
+    uint8_t beat = 64 + (uint8_t)ftoInt(fmul(pulse, ffromi(191)));
+    for (uint16_t i = 0; i < count; i++)
     {
-        leds[i] = ColorFromPalette(palette, gHue + (i * 2), beat - gHue + (i * 10));
+        leds[i] = ColorFromPalette(palette, hue + (i * 2), beat - hue + (i * 10));
     }
 }
-
-void juggle()
-{
-    // eight colored dots, weaving in and out of sync with each other
-    fadeToBlackBy(leds, NUM_LEDS, 20);
-    uint8_t dothue = 0;
-    for (int i = 0; i < 8; i++)
-    {
-        leds[beatsin16(i + 7, 0, NUM_LEDS - 1)] |= CHSV(dothue, 200, 255);
-        dothue += 32;
-    }
-}
-
-// List of patterns to cycle through.  Each is defined as a separate function below.
-typedef void (*SimplePatternList[])();
-SimplePatternList gPatterns = {rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm};
-
-void loopDemoReel(int index)
-{
-    // Call the current pattern function once, updating the 'leds' array
-    gPatterns[index]();
-
-    // send the 'leds' array out to the actual LED strip
-    FastLED.show();
-    // insert a delay to keep the framerate modest
-    FastLED.delay(1000 / 120);
-
-    // do some periodic updates
-    EVERY_N_MILLISECONDS(20) { gHue++; } // slowly cycle the "base color" through the rainbow
-}
-
-void nextPattern()
-{
-    // add one to the current pattern number, and wrap around at the end
-    gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE(gPatterns);
-}
-
-void loopRainbow() { loopDemoReel(0); }
-void loopRainbowWithGlitter() { loopDemoReel(1); }
-void loopConfetti() { loopDemoReel(2); }
-void loopSinelon() { loopDemoReel(3); }
-void loopJuggle() { loopDemoReel(4); }
-void loopBpm() { loopDemoReel(5); }

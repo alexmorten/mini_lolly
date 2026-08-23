@@ -1,335 +1,140 @@
-#include "FastLED.h"
-#include "led_config.h"
-#include "animations/twinkle_fox.h"
-#include "animations/fire2012.h"
-#include "animations/cylon.h"
-#include "animations/demo_reel.h"
-#include "animations/rings.h"
-#include "animations/polar_rings.h"
+#include <Arduino.h>
+#include <FastLED.h>
+#include "Config.h"
+#include "mapping.h"
+#include "effects.h"
+#include "PresetStore.h"
+#include "WebServer.h"
 
-// Replace with your network credentials
-const char *ssid = "MiniLolly Manfred";
-const char *password = "Lumos2024";
+CRGB leds[NUM_LEDS];
 
-#define VOLTS 5
-#define MAX_MA 200
+static const uint8_t BUTTON_PIN_LIST[NUM_BUTTONS] = BUTTON_PINS;
 
-#define NUM_BUTTONS 2
-#define LED_BOARD 15
-int buttonPins[NUM_BUTTONS] = {0, 5};
+// mapping.h is float, the effects are fixed-point, and this chip has no FPU — so
+// the conversion happens once at boot rather than four times per LED per frame.
+static fix16_t mapX[NUM_LEDS], mapY[NUM_LEDS], mapR[NUM_LEDS], mapTheta[NUM_LEDS];
 
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+// Either button advances to the next preset on the cycle. There is no long press:
+// this board has no battery to protect, so it has nothing to power down for.
+struct Button {
+  uint8_t pin;
+  bool state = false, last = false;
+  uint32_t lastDebounce = 0;
+  bool update() {
+    bool pressed = false;
+    bool reading = digitalRead(pin) == LOW;
+    if (reading != last) lastDebounce = millis();
+    if (millis() - lastDebounce > DEBOUNCE_MS && reading != state) {
+      state = reading;
+      if (state) pressed = true;
+    }
+    last = reading;
+    return pressed;
+  }
+} buttons[NUM_BUTTONS];
 
-CRGBArray<NUM_LEDS> leds;
-
-uint8_t brightness = 15;
-
-void setBrightness(uint8_t b) {
-    brightness = constrain(b, 1, 255);
-    FastLED.setBrightness(brightness);
+// Q16.16 seconds from a millisecond count, without touching the FPU-less float path.
+static fix16_t secondsFix(uint32_t ms) {
+  return (fix16_t)(((int64_t)ms << 16) / 1000);
 }
 
-int buttonStates[NUM_BUTTONS] = {LOW};
-int lastButtonStates[NUM_BUTTONS] = {LOW};
-unsigned long lastDebounceTimes[NUM_BUTTONS] = {0};
-String buttonNames[NUM_BUTTONS] = {"Board"};
+void setup() {
+  Serial.begin(115200);
+  delay(300);
 
-#define debounceDelay 50
+  pinMode(LED_BOARD, OUTPUT);
+  digitalWrite(LED_BOARD, LOW);
+  for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+    buttons[i].pin = BUTTON_PIN_LIST[i];
+    pinMode(buttons[i].pin, INPUT_PULLUP);
+  }
 
-bool checkButton(int buttonIndex)
-{
-    bool buttonPressed = false;
-    // read the state of the switch into a local variable:
-    int reading = digitalRead(buttonPins[buttonIndex]);
+  for (uint16_t i = 0; i < NUM_LEDS; i++) {
+    mapX[i] = ffromf(Mapping::LED_X[i]);
+    mapY[i] = ffromf(Mapping::LED_Y[i]);
+    mapR[i] = ffromf(Mapping::LED_R[i]);
+    mapTheta[i] = ffromf(Mapping::LED_THETA[i]);
+  }
 
-    // check if the button has been pressed (i.e., reading is different from lastButtonState)
-    if (reading != lastButtonStates[buttonIndex])
-    {
-        // reset the debouncing timer
-        lastDebounceTimes[buttonIndex] = millis();
-    }
+  FastLED.addLeds<LED_TYPE, LED_DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS)
+      .setCorrection(TypicalLEDStrip);
+#ifdef LED_MAX_MILLIAMPS
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, LED_MAX_MILLIAMPS);
+#endif
+  fill_solid(leds, NUM_LEDS, CRGB::Black);
+  FastLED.setBrightness(BRIGHTNESS);
+  FastLED.show();
 
-    if ((millis() - lastDebounceTimes[buttonIndex]) > debounceDelay)
-    {
-        // whatever the reading is at, it's been there for longer than the debounce delay
-        // so take it as the actual current state:
-        if (reading != buttonStates[buttonIndex])
-        {
-            buttonStates[buttonIndex] = reading;
+  PresetStore::begin();
+  LollyWeb::begin();
 
-            // only toggle the LED if the new button state is HIGH
-            if (buttonStates[buttonIndex] == LOW)
-            {
-                Serial.print("button ");
-                Serial.print(buttonNames[buttonIndex]);
-                Serial.println(" pressed");
-                digitalWrite(LED_BOARD, !digitalRead(LED_BOARD));
-                buttonPressed = true;
-            }
-        }
-    }
-
-    // save the reading. Next time through the loop, it'll be the lastButtonState:
-    lastButtonStates[buttonIndex] = reading;
-
-    return buttonPressed;
+  const Preset& p = PresetStore::activePreset();
+  Serial.printf("Mini Lolly ready — preset %u/%u: %s (effect %u)\n",
+                PresetStore::activeIndex() + 1, PresetStore::presetCount(),
+                p.name, p.effect);
 }
 
-int patternIndex = 0;
+void loop() {
+  static uint32_t lastFrame = 0, frame = 0;
+  static uint8_t lastActive = 0xFF;
+  static fix16_t scaledTime = 0;
 
-// ============================ WIFI code ============================
-// https://randomnerdtutorials.com/esp32-access-point-ap-web-server/
-
-/*********
-  Rui Santos
-  Complete project details at https://randomnerdtutorials.com
-*********/
-
-// Load Wi-Fi library
-#include <WiFi.h>
-
-// Set web server port number to 80
-WiFiServer server(80);
-
-// Variable to store the HTTP request
-String header;
-
-void setupWifi()
-{
-    // Connect to Wi-Fi network with SSID and password
-    Serial.print("Setting AP (Access Point)…");
-    // Remove the password parameter, if you want the AP (Access Point) to be open
-    WiFi.softAP(ssid, password);
-
-    IPAddress IP = WiFi.softAPIP();
-    // The network established by softAP will have default IP address of 192.168.4.1. This address may be changed using softAPConfig (see below).
-    Serial.print("AP IP address: ");
-    Serial.println(IP);
-
-    server.begin();
-}
-
-// array of strings with pattern names
-String patterns[] = {
-    // "Twinkle Fox",
-"Polar Radial",
-"Rainbow with Glitter",
-    "Rings",
-    //  "Fire2012",
-     // "Cylon",
-"Polar Rings",
-"Polar Spiral",
-// "Rainbow",
-// "Confetti",
-// "Sinelon",
-// "Juggle",
-// "BPM"
-};
-
-const int numPatterns = ARRAY_SIZE(patterns);
-
-void (*patternFunctions[])() = {
-    // loopTwinkleFox,
-    loopPolarRingsRadial,
-    loopRainbowWithGlitter,
-    loopRings,
-    // loopFire2012,
-    // loopCylon,
-    loopPolarRings,
-    loopPolarRingsSpiral,
-    // loopRainbow,
-    // loopConfetti,
-    // loopSinelon,
-    // loopJuggle,
-    // loopBpm,
-};
-
-void checkHTTPRequest()
-{
-    for (int i = 0; i < ARRAY_SIZE(patterns); i++)
-    {
-        if (header.indexOf("GET /" + String(i) + "/on") >= 0)
-        {
-            Serial.println(patterns[i]);
-            patternIndex = i;
-        }
+  for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+    if (buttons[i].update()) {
+      PresetStore::nextPreset();
+      digitalWrite(LED_BOARD, !digitalRead(LED_BOARD));
+      Serial.printf("preset %u: %s\n", PresetStore::activeIndex(),
+                    PresetStore::activePreset().name);
     }
-    
-    // Check for brightness control
-    int brightnessIndex = header.indexOf("GET /brightness/");
-    if (brightnessIndex >= 0) {
-        int valueStart = brightnessIndex + 16; // Length of "GET /brightness/"
-        int valueEnd = header.indexOf(" ", valueStart);
-        if (valueEnd == -1) valueEnd = header.indexOf("\n", valueStart);
-        if (valueEnd > valueStart) {
-            String valueStr = header.substring(valueStart, valueEnd);
-            int newBrightness = valueStr.toInt();
-            setBrightness(newBrightness);
-            Serial.print("Brightness set to: ");
-            Serial.println(brightness);
-        }
+  }
+
+  LollyWeb::loop();
+
+  uint32_t now = millis();
+  if (now - lastFrame < FRAME_INTERVAL_MS) return;
+  // Taken after the blocking HTTP read, not before it, so a request that stalls
+  // the loop does not then bill the animation for the time it took.
+  fix16_t dt = secondsFix(now - lastFrame);
+  lastFrame = now;
+
+  const Preset& preset = PresetStore::activePreset();
+
+  // One place to catch a preset change from either source (a button or POST
+  // /api/active): the scaled clock restarts so an animation always begins at its
+  // start, and the frame effects get a clean array rather than the last one's trails.
+  if (PresetStore::activeIndex() != lastActive) {
+    lastActive = PresetStore::activeIndex();
+    scaledTime = 0;
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+  }
+
+  scaledTime = fadd(scaledTime, fmul(dt, preset.params.speed));
+  while (scaledTime >= ffromi(TIME_WRAP_S)) scaledTime = fsub(scaledTime, ffromi(TIME_WRAP_S));
+
+  EffectCtx ctx;
+  ctx.t = secondsFix(now % (TIME_WRAP_S * 1000));
+  ctx.ts = scaledTime;
+  ctx.dt = dt;
+  ctx.frame = frame++;
+  ctx.params = &preset.params;
+
+  uint8_t fn = preset.effect;
+  if (fn >= EFFECT_COUNT) fn = EFFECT_SOLID;
+
+  if (effectIsFrame(fn)) {
+    FRAME_EFFECTS[fn - EFFECT_FRAME_FIRST](ctx, leds, NUM_LEDS);
+  } else {
+    for (uint16_t i = 0; i < NUM_LEDS; i++) {
+      ctx.i = i;
+      ctx.x = mapX[i];
+      ctx.y = mapY[i];
+      ctx.r = mapR[i];
+      ctx.theta = mapTheta[i];
+      uint32_t c = PIXEL_EFFECTS[fn](ctx);
+      leds[i] = CRGB(r8(c), g8(c), b8(c));
     }
-}
+  }
 
-void renderBrightnessControlsHTML(WiFiClient *client)
-{
-    client->println("<h2>Brightness: " + String(brightness) + "</h2>");
-    
-    int brightnessLevels[] = {5, 10, 15, 20, 25, 50};
-    int numLevels = 6;
-    
-    for (int i = 0; i < numLevels; i++)
-    {
-        client->print("<a href=\"/brightness/" + String(brightnessLevels[i]) + "\"><button class=\"");
-        if (brightness == brightnessLevels[i]) {
-            client->print("button");
-        } else {
-            client->print("button button2");
-        }
-        client->println("\">" + String(brightnessLevels[i]) + "</button></a>");
-    }
-}
-
-void renderButtonsHTML(WiFiClient *client)
-{
-    for (int i = 0; i < ARRAY_SIZE(patterns); i++)
-    {
-        // Display current state, and ON/OFF buttons for GPIO 26
-        client->println("<p>" + patterns[i]);
-        // If the output26State is off, it displays the ON button
-        if (patternIndex == i)
-        {
-            client->println(" <a href=\"/" + String(i) + "/on\"><button class=\"button\">ON</button></a></p>");
-        }
-        else
-        {
-            client->println(" <a href=\"/" + String(i) + "/on\"><button class=\"button button2\">ON</button></a></p>");
-        }
-    }
-}
-
-void loopWifi()
-{
-    WiFiClient client = server.available(); // Listen for incoming clients
-
-    if (client)
-    { // If a new client connects,
-        unsigned long startMillis = millis();
-        // Serial.println("connected"); // print a message out in the serial port
-        String currentLine = ""; // make a String to hold incoming data from the client
-        while (client.connected())
-        { // loop while the client's connected
-            if (client.available())
-            {                           // if there's bytes to read from the client,
-                char c = client.read(); // read a byte, then
-                // Serial.write(c);        // print it out the serial monitor
-                header += c;
-                if (c == '\n')
-                { // if the byte is a newline character
-                    // if the current line is blank, you got two newline characters in a row.
-                    // that's the end of the client HTTP request, so send a response:
-                    if (currentLine.length() == 0)
-                    {
-                        // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-                        // and a content-type so the client knows what's coming, then a blank line:
-                        client.println("HTTP/1.1 200 OK");
-                        client.println("Content-type: text/html");
-                        client.println("Connection: close");
-                        client.println();
-
-                        checkHTTPRequest();
-
-                        // Display the HTML web page
-                        client.println("<!DOCTYPE html><html>");
-                        client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-                        client.println("<link rel=\"icon\" href=\"data:,\">");
-                        // CSS to style the on/off buttons
-                        // Feel free to change the background-color and font-size attributes to fit your preferences
-                        client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-                        client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 4px 20px;");
-                        client.println("text-decoration: none; font-size: 20px; margin: 2px; cursor: pointer;}");
-                        client.println(".button2 {background-color: #555555;}</style></head>");
-
-                        // Web Page Heading
-                        client.println("<body><h1>MiniLolly Remote</h1>");
-
-                        renderButtonsHTML(&client);
-                        
-                        renderBrightnessControlsHTML(&client);
-
-                        client.println("</body></html>");
-
-                        // The HTTP response ends with another blank line
-                        client.println();
-                        // Break out of the while loop
-                        break;
-                    }
-                    else
-                    { // if you got a newline, then clear currentLine
-                        currentLine = "";
-                    }
-                }
-                else if (c != '\r')
-                {                     // if you got anything else but a carriage return character,
-                    currentLine += c; // add it to the end of the currentLine
-                }
-            }
-        }
-        // Clear the header variable
-        header = "";
-        // Close the connection
-        client.stop();
-        Serial.print("request took ");
-        Serial.print(millis() - startMillis);
-        Serial.println("ms");
-    }
-}
-
-// ============================ WIFI code ============================
-
-void setup()
-{
-    Serial.begin(115200);
-    Serial.println("initialized");
-
-    pinMode(LED_BOARD, OUTPUT);
-
-    for (int i = 0; i < NUM_BUTTONS; i++)
-    {
-        pinMode(buttonPins[i], INPUT_PULLUP);
-    }
-
-    // start with the LED off
-    digitalWrite(LED_BOARD, LOW);
-
-    delay(3000); // safety startup delay
-
-    setupWifi();
-
-    // FastLED.setMaxPowerInVoltsAndMilliamps(VOLTS, MAX_MA);
-    FastLED.addLeds<LED_TYPE, LED_DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS)
-        .setCorrection(TypicalLEDStrip);
-    
-    setBrightness(brightness);
-}
-
-void loop()
-{
-    bool buttonPressedESP = checkButton(0);
-    bool buttonPressedExternal = checkButton(1);
-    if (buttonPressedESP || buttonPressedExternal)
-    {
-        patternIndex++;
-        if (patternIndex > (numPatterns - 1))
-        {
-            patternIndex = 0;
-        }
-    }
-
-    if (patternIndex >= 0 && patternIndex < numPatterns)
-    {
-        patternFunctions[patternIndex]();
-    }
-
-    loopWifi();
+  FastLED.setBrightness(min(preset.brightness, (uint8_t)MAX_BRIGHTNESS));
+  FastLED.show();
 }

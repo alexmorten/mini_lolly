@@ -1,43 +1,24 @@
 #include "cylon.h"
+#include "circle_order.h"
 
-extern CRGBArray<NUM_LEDS> leds;
-
-void fadeall()
+// This one used to run its whole sweep inside a single call, with a show() and a
+// delay() per LED — which is why it had to be commented out of the pattern list:
+// nothing else in the firmware got a turn for the length of a sweep. The dot's
+// position now comes from the clock, so one call is one frame.
+void cylonFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count)
 {
-    for (int i = 0; i < NUM_LEDS; i++)
+    for (uint16_t i = 0; i < count; i++)
     {
         leds[i].nscale8(250);
     }
-}
 
-void loopCylon()
-{
-    static uint8_t hue = 0;
-    // First slide the led in one direction
-    for (int i = 0; i < NUM_LEDS; i++)
-    {
-        // Set the i'th led to red
-        leds[i] = CHSV(hue++, 255, 255);
-        // Show the leds
-        FastLED.show();
-        // now that we've shown the leds, reset the i'th led to black
-        // leds[i] = CRGB::Black;
-        fadeall();
-        // Wait a little bit before we loop around and do it again
-        FastLED.delay(1000 / 120);
-    }
+    // The dot laps the board rather than bouncing between the two ends of the
+    // chain: one turn per four units of scaled time, in angular order, so it
+    // keeps going round instead of reversing at an end the board does not have.
+    uint16_t slot = circleSlot(fmul(ctx.ts, ffromf(0.25f)), count);
 
-    // Now go in the other direction.
-    for (int i = (NUM_LEDS)-1; i >= 0; i--)
-    {
-        // Set the i'th led to red
-        leds[i] = CHSV(hue++, 255, 255);
-        // Show the leds
-        FastLED.show();
-        // now that we've shown the leds, reset the i'th led to black
-        // leds[i] = CRGB::Black;
-        fadeall();
-        // Wait a little bit before we loop around and do it again
-        FastLED.delay(1000 / 120);
-    }
+    // Hue keyed to the position rather than to a counter, so it does not race
+    // ahead when the sweep is slowed down.
+    leds[circleIndex(slot, count)] =
+        CHSV((uint8_t)ftoInt(fmul(ffrac(fmul(ctx.ts, ffromf(0.125f))), ffromi(255))), 255, 255);
 }

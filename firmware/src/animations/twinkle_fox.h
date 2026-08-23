@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FastLED.h"
-#include "../led_config.h"
+#include "../effects.h"
 
 // TwinkleFox configuration
 #define TWINKLE_SPEED 4
@@ -10,25 +10,6 @@
 #define AUTO_SELECT_BACKGROUND_COLOR 0
 #define COOL_LIKE_INCANDESCENT 1
 
-extern CRGB gBackgroundColor;
-extern CRGBPalette16 gCurrentPalette;
-extern CRGBPalette16 gTargetPalette;
-
-// Color palettes
-extern const TProgmemRGBPalette16 RedGreenWhite_p;
-extern const TProgmemRGBPalette16 Holly_p;
-extern const TProgmemRGBPalette16 RedWhite_p;
-extern const TProgmemRGBPalette16 BlueWhite_p;
-extern const TProgmemRGBPalette16 FairyLight_p;
-extern const TProgmemRGBPalette16 Snow_p;
-extern const TProgmemRGBPalette16 RetroC9_p;
-extern const TProgmemRGBPalette16 Ice_p;
-extern const TProgmemRGBPalette16 *ActivePaletteList[];
-
-// Function declarations
-void loopTwinkleFox();
-void chooseNextColorPalette(CRGBPalette16 &pal);
-void drawTwinkles(CRGBSet &L);
-CRGB computeOneTwinkle(uint32_t ms, uint8_t salt);
-uint8_t attackDecayWave8(uint8_t i);
-void coolLikeIncandescent(CRGB &c, uint8_t phase);
+// Renders one frame; the caller owns show(). Cycles its own palette on a timer,
+// so it takes no parameters.
+void twinkleFoxFrame(const EffectCtx &ctx, CRGB *leds, uint16_t count);

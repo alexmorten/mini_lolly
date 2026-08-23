@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Lolly</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="board"></canvas>
+  <div id="stageInfo">
+    <span id="fps">sim 0 fps</span>
+    <button id="playpause">Pause</button>
+    <label class="check"><input type="checkbox" id="showidx"> indices</label>
+  </div>
+</div>
+
+<div id="panel">
+ <div id="panelScroll">
+  <h1>Mini Lolly</h1>
+  <div class="sub"><span id="ledCount">63</span> WS2812B on a Fermat spiral · native effects · live device control</div>
+
+  <section>
+    <h2>Device</h2>
+    <div class="row">
+      <label for="devUrl">URL</label>
+      <input type="text" id="devUrl" class="grow" value="http://192.168.4.1" spellcheck="false">
+      <button id="devConnect">Connect</button>
+    </div>
+    <div class="row"><label>Status</label><span id="devState" class="grow">offline</span></div>
+  </section>
+
+  <section>
+    <h2>Presets</h2>
+    <div class="row">
+      <button id="presetNew">+ New</button>
+      <button id="presetDup">Duplicate</button>
+      <span class="selinfo grow" id="presetCount"></span>
+    </div>
+    <ul id="presetList"></ul>
+    <div class="row">
+      <input type="text" id="presetName" class="grow" maxlength="23" placeholder="preset name" spellcheck="false">
+      <label class="check"><input type="checkbox" id="presetCycle"> on button cycle</label>
+      <button class="danger" id="presetDelete">Delete</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Animation</h2>
+    <div class="row">
+      <label for="effectSel">Effect</label>
+      <select id="effectSel" class="grow"></select>
+    </div>
+    <div id="paramBox"></div>
+    <div class="row" id="nativeNote" hidden>
+      <span class="selinfo">* runs FastLED code on the device — the preview here is a stand-in, not the real frame.</span>
+    </div>
+    <div class="row">
+      <label for="bright">Brightness</label>
+      <input type="range" id="bright" class="grow" min="1" max="64" step="1" value="15">
+      <span class="selinfo" id="brightVal">15 / 64</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Backup</h2>
+    <div class="row">
+      <button id="backupExport">Export all</button>
+      <input type="file" id="backupFile" class="grow" accept="application/json,.json" aria-label="Backup file to import">
+      <button class="danger" id="backupImport">Import</button>
+    </div>
+    <div class="row">
+      <span class="selinfo">Import replaces every preset on the device — it is a restore, not a merge.</span>
+    </div>
+  </section>
+ </div>
+
+  <div id="saveBar">
+    <button class="primary" id="save">Save to device</button>
+    <span class="grow" id="dirtyMark">not connected</span>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

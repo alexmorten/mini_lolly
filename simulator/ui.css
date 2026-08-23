@@ -1,0 +1,224 @@
+/* Mini Lolly simulator styles. prepare_data.sh inlines this into the packed SPA,
+   so keep it dependency-free — no imports, no external fonts. */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #0d0f12;
+  --panel: #131519;
+  --surface: #1b1e23;
+  --line: #23262c;
+  --line-2: #2f333b;
+
+  --text: #d7dbe0;
+  --muted: #9aa0a9;
+  --dim: #7c828c;
+
+  --accent: #ff9b3d;
+  --accent-hi: #ffab5c;
+  --ok: #5cb84b;
+  --err: #ff6b6b;
+
+  /* This UI drives real hardware, so a misclick can overwrite a preset —
+     controls get generous hit areas. */
+  --ctl-h: 34px;
+  --radius: 5px;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ---- Stage ---------------------------------------------------------------- */
+
+#stage {
+  flex: 1 1 45%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+}
+
+#board {
+  width: min(100%, 70vh);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #06070a;
+  box-shadow: 0 0 0 1px var(--line), 0 18px 50px rgba(0, 0, 0, .6);
+  /* The LED glow is drawn as stacked translucent discs; the blur is what turns
+     those rings into a single soft halo. */
+  filter: blur(2px);
+}
+
+#stageInfo {
+  color: var(--dim);
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+/* ---- Panel ---------------------------------------------------------------- */
+
+/* The panel is a column with its own scroller, so the save bar can sit outside
+   the scrolling area — a sticky footer would cover a control row on every screen
+   too short to show the whole panel, which is most of them. */
+#panel {
+  flex: 1 1 55%;
+  min-width: 380px;
+  max-width: 620px;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#panelScroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 16px 18px;
+}
+
+h1 {
+  font-size: 15px;
+  margin: 0;
+  letter-spacing: .04em;
+}
+
+.sub { color: var(--dim); margin: 2px 0 14px; }
+
+section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px 12px;
+  margin-bottom: 12px;
+  background: var(--surface);
+}
+
+section > h2 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.row:last-child { margin-bottom: 0; }
+.row > label:first-child {
+  width: 84px;
+  flex: none;
+  color: var(--muted);
+}
+.grow { flex: 1 1 auto; min-width: 0; }
+
+button, input, select {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  height: var(--ctl-h);
+  padding: 0 10px;
+}
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: #17130c; border-color: var(--accent); font-weight: 600; }
+button.primary:hover { background: var(--accent-hi); }
+button.danger:hover { border-color: var(--err); color: var(--err); }
+button:disabled { opacity: .4; cursor: default; border-color: var(--line-2); }
+
+input[type=range] { padding: 0; height: var(--ctl-h); accent-color: var(--accent); }
+input[type=color] { padding: 2px; width: 52px; }
+input[type=file] { border: none; background: none; padding: 0; height: auto; font-size: 11px; }
+.numin { width: 74px; text-align: right; }
+
+label.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  width: auto;
+}
+
+.selinfo { color: var(--dim); white-space: nowrap; }
+
+/* ---- Preset list ---------------------------------------------------------- */
+
+#presetList {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  max-height: 190px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+#presetList li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+}
+#presetList li:last-child { border-bottom: none; }
+#presetList li:hover { background: var(--surface); }
+#presetList li.sel { background: var(--surface); box-shadow: inset 3px 0 0 var(--accent); }
+#presetList .pname { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#presetList .peff { color: var(--dim); font-size: 11px; }
+#presetList .chip {
+  font-size: 10px;
+  color: var(--ok);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 1px 6px;
+}
+
+/* ---- Status --------------------------------------------------------------- */
+
+#devState { color: var(--dim); }
+#devState.on { color: var(--ok); }
+#devState.err { color: var(--err); }
+
+#saveBar {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 18px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+}
+#saveBar .grow { text-align: right; color: var(--dim); }
+
+.dirty { color: var(--accent); }
+
+@media (max-width: 900px) {
+  body { flex-direction: column; overflow: auto; height: auto; }
+  #panel { max-width: none; min-width: 0; border-left: none; border-top: 1px solid var(--line); }
+  #panelScroll { overflow: visible; }
+  #board { width: min(100%, 60vh); }
+}
